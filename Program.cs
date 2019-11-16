@@ -58,7 +58,7 @@ namespace CS488
                     logger.Info($"Importing documets from '{src.Item2}'...");
 
                     // Import all .json and .csv files from the location specified in the second element of the tuple
-                    // The third element of the tuple specifies how many rows to read in before importing them into the db
+                    // The third element of the tuple specifies the max amt of rows to be read at a time before inserting to db
                     var count = import_folder(src.Item2, col, src.Item3);
                     logger.Info($"Imported {count.Result.counter} documents from {src.Item2}!");
                 }
@@ -140,6 +140,8 @@ namespace CS488
             var files = System.IO.Directory.EnumerateFiles(src);
 
             LongHolder total_count = new LongHolder();
+            
+            // Use Regex to get the file extension
             Regex pattern = new Regex(@"\.[a-zA-Z]+$");
             foreach (string file in files)
             {
@@ -155,7 +157,7 @@ namespace CS488
                         count = await import_csv(file, collection, import_chunk_size);
                         break;
                     default:
-                        logger.Error($"Unable to import non-json file: {file}");
+                        logger.Error($"File extension not supported for importing: {file}");
                         continue;
                 }
 
@@ -163,7 +165,7 @@ namespace CS488
                 if (count > 0)
                 {
                     logger.Info($"Successfully imported file: {file}");
-                    lock (total_count)
+                    lock (total_count) // This lock is useless right now... count can change! Use .ContinueWith()
                     {
                         total_count.counter += count;
                     }
@@ -335,7 +337,6 @@ namespace CS488
          *      2. Project a limited number of columns to add additional complexity.
          *      3. Limit to the top 5 results ($limit).
          */
-
         static async Task<long> run_query_2(IMongoCollection<BsonDocument> collection)
         {
             return 0;
@@ -349,7 +350,6 @@ namespace CS488
          *      3. Capture the number of documents in this resulting set.
          *      4. Perform a grouping on the filtered set to group on the cancellation_policy and count using $group and $sum. This can then be formatted to get this count divided by the total number of documents to gather a percentage
          */
-
         static async Task<long> run_query_3(IMongoCollection<BsonDocument> collection)
         {
             return 0;
@@ -361,7 +361,6 @@ namespace CS488
          *      1. Perform a filter to find listings with price greater than $1000 ($gt)
          *      2. Perform an average aggregation for the average host_response_rate
          */
-
         static async Task<long> run_query_4(IMongoCollection<BsonDocument> collection)
         {
             return 0;
@@ -374,7 +373,6 @@ namespace CS488
          *      2. Perform a lookup between the listings and reviews tables with id and listing_id as the lookup criteria.
          *      3. For each host id, return the max date from the reviews ($max). (This possibly can be completed before the lookup for efficiency)
          */
-
         static async Task<long> run_query_5(IMongoCollection<BsonDocument> collection)
         {
             return 0;
@@ -385,7 +383,6 @@ namespace CS488
         /*  Implementation Strategy:
          *      1. Perform an updateMany on all listings from Portland with greater than 2 bedrooms and 2 bathrooms to set the require_guest_phone_verification field as true. 
          */
-
         static async Task<long> run_query_6(IMongoCollection<BsonDocument> collection)
         {
             return 0;
