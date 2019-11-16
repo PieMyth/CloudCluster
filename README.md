@@ -6,17 +6,20 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
 
 ## Resources
 <i>
-  
+
+[Airbnb data sets](http://insideairbnb.com/get-the-data.html)
+
 [MongoDB on Compute Engine](https://console.cloud.google.com/marketplace/details/click-to-deploy-images/mongodb)
   
 [MongoDB Compute Engine Tutorial](https://blog.codecentric.de/en/2018/03/cloud-launcher-mongodb-google-compute-engine/)
 
+[MongoDB Atlas](https://cloud.mongodb.com)
+
 [C# MongoDB Examples](https://www.codementor.io/pmbanugo/working-with-mongodb-in-net-1-basics-g4frivcvz)
 
-[MongoDB Atlas](https://cloud.mongodb.com)
-</i>
+[C# Async & Await Explanation](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/)
 
-<hr/>
+</i><hr/>
 
 ## Visual Studios setup steps
 1. Set up the GCP/AWS/Atlas cluster and whitelist your IP (see section below)
