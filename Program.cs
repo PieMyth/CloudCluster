@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using CsvHelper;
 using MongoDB.Bson.Serialization;
 using NLog;
+// !!! Via nuget in visual studios, install Nlog.Config to get the logger config file !!!
 
 
 namespace CS488
