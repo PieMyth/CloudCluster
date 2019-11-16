@@ -98,7 +98,7 @@ From the first link, 'MongoDB on Compute Engine'...
 1. You do not need to turn on or turn off clusters, Atlas manages this for you
 <hr/>
 
-##TODO:
+## TODO:
 - Try and catch blocks for queries and db connection attempts
 - Set up tests for TDD?
 - Execute import & queries asynchronously
