@@ -104,8 +104,27 @@ From the first link, 'MongoDB on Compute Engine'...
 ## TODO:
 - Try and catch blocks for queries and db connection attempts
 - Set up tests for TDD?
-- Execute import & queries asynchronously
 - Set up Atlas clusters on AWS, GCP, and Azure
-- Add code for reporting query performance (ex. python's pychart library)
 - Use cursors to parse through large query results
+- Set up indexes after importing data
+- Add our report .pdfs onto github
+- Add our presentation onto github
+- Implement at least 4 queries
+    - At least 3 of these queries must join reviews & listings
+- Utilize .explain() to get query result metadata
+- Add code for reporting query performance (ex. python's pychart library)
+
+
+## Stretch goals
+- Execute import & queries asynchronously
 - Log errors onto a local file (set this up in the Nlog.Config file)
+- Create a front end application to connect to & display results from our driver
+- Use google sentiment analysis API to to get  reviewer sentiment from listings (ex. How do users generally feel about this host/listing?)
+- Explore various data models (ex. w/ embedded documents for grouping host info, geospatial info, etc.)
+    - Multikey indexes on embedded documents
+- Explore using GeoJSON file
+- Explore sharding
+- Explore replication & performance penalty during an election
+- Use a service account to connect to the db rather than IP whitelisting
+- **Set up identical clusters on AWS, GCP, Azure and compare performance vs. Altas**
+    - If we figure out the service account, this is very do-able! It would just be a change of connection string.
