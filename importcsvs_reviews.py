@@ -13,11 +13,11 @@ client = pymongo.MongoClient(
         "mongodb+srv://user:userpassword@cluster0-lgn2s.gcp.mongodb.net/test?retryWrites=true&w=majority")
 
 db = client.airbnb # change this to use .<database_name>
-collection = db['airbnb'] # change this to use the '<collection_name>
+collection = db['reviews'] # change this to use the '<collection_name>
 file_count = 0
 
-while file_count < 7:
-    file_name  = "C:/users/ianpe/desktop/all_json/" + str(file_count)+"listings.json"
+while file_count < 1:
+    file_name  = "C:/users/ianpe/desktop/reviews_json/" + str(file_count)+"reviews.json"
     df = pd.read_json(file_name)
     dict=[]
     file_count +=1
@@ -27,7 +27,7 @@ while file_count < 7:
         # print(dict)
         # print(row_dict)
         # print(count)
-        if count < 100:
+        if count < 1000:
             dict.append(row_dict)
             count +=1
         else:
