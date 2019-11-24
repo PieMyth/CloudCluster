@@ -86,6 +86,14 @@ namespace mongoCluster
             return this._getCollection(collectionName);
         }
 
+        /// <summary>
+        /// Run a test query on the Listings collection
+        /// Queries for all listings of up to price_limit with a min_nights_limit 
+        /// </summary>
+        /// <param name="collection">The collection name</param>
+        /// <param name="price_limit">A maximum limit on the total price for the minimum number of nights</param>
+        /// <param name="min_nights_limit">The minimum number of nights required in order to make the booking</param>
+        /// <returns>Returns the amount of documents from query</returns>
         public bool testQuery()
         { 
             // (price_limit, min_nights_limit)
@@ -109,11 +117,11 @@ namespace mongoCluster
             Console.WriteLine('\n' + new string('-', 100) + '\n');
             logger.Info("Query 1 - Count query");
             // Using zipcode range (I'm only doing downtown portland zip codes)
-            Task<long> countQueryResult = countQuery(this._collection, 2, 97201, 97210);
+            Task<long> countQueryResult = this._countQuery(this._collection, 2, 97201, 97210);
             logger.Info($"There are {countQueryResult.Result} listings with over 2 bedrooms in zipcode range from 97201 - 972010.");
 
             // Using city name
-            Task<long> otherCountQueryResult = countQuery(this._collection, 2, city_limit: "Portland");
+            Task<long> otherCountQueryResult = this._countQuery(this._collection, 2, city_limit: "Portland");
             logger.Info($"There are {otherCountQueryResult.Result} listings with over 2 bedrooms in the city of Portland.");
             return true;
         }
@@ -155,9 +163,14 @@ namespace mongoCluster
             return true;
         }
 
-        // Run a test query on the Listings collection
-        // Queries for all listings of up to price_limit with a min_nights_limit 
-        // Returns the amount of documents from query
+        /// <summary>
+        /// Run a test query on the Listings collection
+        /// Queries for all listings of up to price_limit with a min_nights_limit 
+        /// </summary>
+        /// <param name="collection">The collection name</param>
+        /// <param name="price_limit">A maximum limit on the total price for the minimum number of nights</param>
+        /// <param name="min_nights_limit">The minimum number of nights required in order to make the booking</param>
+        /// <returns>Returns the amount of documents from query</returns>
         private async Task<long> _testQuery(IMongoCollection<BsonDocument> collection, int price_limit, int min_nights_limit)
         {
             long count = 0;
@@ -200,7 +213,7 @@ namespace mongoCluster
          *      1. Perform a filter where the city is equal to “Portland” ($eq) 
          *      2. Perform a secondary filter where the number of bedrooms is greater than 2 ($gt)
          */
-       static async Task<long> countQuery(IMongoCollection<BsonDocument> collection, int bedroom_limit, 
+       private async Task<long> _countQuery(IMongoCollection<BsonDocument> collection, int bedroom_limit, 
                                            int zipcode_start_limit = -1, int zipcode_end_limit = -1, string city_limit = "")
        {
            FilterDefinition<BsonDocument> filter;
