@@ -63,6 +63,13 @@ namespace mongoCluster
             return this._getDatabase();
         }
 
+        /// <summary>Check if a collection exists</summary>
+        /// <returns>True if collection exists, False otherwise</returns>
+        public bool collectionExists(String collectionName)
+        {
+            return _collectionExists(collectionName);
+        }
+
         /// <summary>Accesses and retrieves a specified collection</summary>
         /// <returns>True if successfully accessed, False, otherwise</returns>
         public bool getCollection(String collectionName)
@@ -138,18 +145,31 @@ namespace mongoCluster
             return false;
         }
 
+        /// <summary>Check if a collection exists</summary>
+        /// <returns>True if collection exists, False otherwise</returns>
+        private bool _collectionExists(String collectionName)
+        {
+            // modified from https://stackoverflow.com/questions/25017219/how-to-check-if-collection-exists-in-mongodb-using-c-sharp-driver
+            BsonDocument filter = new BsonDocument("name", collectionName);
+            var collections = new ListCollectionNamesOptions { Filter = filter };
+            return _db.ListCollectionNames(collections).Any();
+        }
+
         /// <summary>Accesses and returns a specified collection</summary>
         /// <returns>True if successfully accessed, False, otherwise</returns>
         private bool _getCollection(String collectionName)
         {
+            if (!this._collectionExists(collectionName))
+                return false;
+
             try
             {
                 this._collection = this._db.GetCollection<BsonDocument>(collectionName);
             }
-            catch (ArgumentException err)
+            catch (ArgumentNullException err)
             {
                 Console.WriteLine($"\nThe collection name must be composed of valid characters:\n{err}");
-                throw new ArgumentException();
+                throw new ArgumentNullException();
             }
             return true;
         }
