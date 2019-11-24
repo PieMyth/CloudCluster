@@ -5,8 +5,9 @@
 *.user
 *.ruser
 *.log
+Dataset/
 Listings/
-proof-of-concept/
+Reviews/
 
 # build
 [Dd]ebug/
