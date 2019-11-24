@@ -1,0 +1,90 @@
+00listings.json		Perth, Western Australia, Australia		77
+01listings.json		Vienna, Wien, Austria		72
+02listings.json		Belgium		48
+03listings.json		Antwerp, Flanders, Belgium		12
+04listings.json		Ghent, Flemish Region, Belgium		7
+05listings.json		Caye Caulker, Belize		16
+06listings.json		Rio de Janeiro, Rio de Janeiro, Brazil		185
+07listings.json		Vancouver, British Columbia, Canada		39
+08listings.json		Victoria, British Columbia, Canada		24
+09listings.json		Spring, Texas, United States		12
+10listings.json		CA		19
+11listings.json		Toronto, Ontario, Canada		127
+12listings.json		Montreal, Québec, Canada		120
+13listings.json		Quebec, Quebec, Canada		20
+14listings.json		Beijing, Beijing, China		304
+15listings.json		Hong Kong		79
+16listings.json		Prague, Prague, Czech Republic		88
+17listings.json		Copenhagen, Capital Region of Denmark, Denmark		143
+18listings.json		Lyon, Auvergne-Rhône-Alpes, France		63
+19listings.json		Paris, Île-de-France, France		375
+20listings.json		Bordeaux, Aquitania, France		60
+21listings.json		Berlin, Berlin, Germany		130
+22listings.json		Munich, Bavaria, Germany		56
+23listings.json		Athens, Attica, Greece		76
+24listings.json		Thessalonika, Central Macedonia, Greece		22
+25listings.json		Iraklion, Kriti, Greece		122
+26listings.json		Thera, Egeo, Greece		148
+27listings.json		Dublin  Ireland		54
+28listings.json		Naples, Campania, Italy		50
+29listings.json		Bologna, Emilia-Romagna, Italy		26
+30listings.json		Rome, Lazio, Italy		197
+31listings.json		Solto Collina, Lombardia, Italy		13
+32listings.json		Milan, Lombardia, Italy		121
+33listings.json		IT		211
+34listings.json		None		304
+35listings.json		Florence, Toscana, Italy		81
+36listings.json		Venice, Veneto, Italy		57
+37listings.json		Shibuya, Tokyo, Japan		106
+38listings.json		Mexico City, Mexico City, Mexico		114
+39listings.json		Oslo, Oslo, Norway		44
+40listings.json		New York, New York, United States		157
+41listings.json		Oporto, Porto District, Portugal		70
+42listings.json		singapore		49
+43listings.json		Cape Town, Western Cape, South Africa		131
+44listings.json		Malaga, Andalucía, Spain		36
+45listings.json		Spain		40
+46listings.json		Barcelona, Cataluña, Spain		124
+47listings.json		Gerona, Cataluña, Spain		113
+48listings.json		Madrid, Madrid, Spain		126
+49listings.json		Mallorca		110
+50listings.json		Sant Lluís, Illes Balears, Spain		17
+51listings.json		San Sebastian, Basque Country, Spain		30
+52listings.json		Valencia, Valencian Community, Spain		44
+53listings.json		Stockholm, Stockholm, Sweden		40
+54listings.json		Geneva, Geneva, Switzerland		16
+55listings.json		Geneva, Geneva, Switzerland		17
+56listings.json		Taipei, Taiwan		86
+57listings.json		Amsterdam, Noord-Holland, The Netherlands		120
+58listings.json		Istanbul, Istanbul, Turkey		103
+59listings.json		Bristol, England, United Kingdom		16
+60listings.json		Bolton, England, United Kingdom		25
+61listings.json		London, England, United Kingdom		495
+62listings.json		Edinburgh, Scotland, United Kingdom		86
+63listings.json		San Francisco, California, United States		274
+64listings.json		Oakland, California, United States		20
+65listings.json		Pacific Grove, California, United States		1
+66listings.json		San Diego, California, United States		84
+67listings.json		San Francisco, California, United States		52
+68listings.json		Palo Alto, California, United States		44
+69listings.json		Aptos, California, United States		11
+70listings.json		Denver, Colorado, United States		30
+71listings.json		Washington, District of Columbia, United States		57
+72listings.json		Fort Lauderdale, Florida, United States		60
+73listings.json		Honolulu, Hawaii, United States		154
+74listings.json		Chicago, Illinois, United States		56
+75listings.json		New Orleans, Louisiana, United States		46
+76listings.json		Massachusetts		39
+77listings.json		Cambridge, Massachusetts, United States		8
+78listings.json		Minneapolis, Minnesota, United States		38
+79listings.json		Asheville, North Carolina, United States		15
+80listings.json		Jersey City, New Jersey, United States		20
+81listings.json		Las Vegas, Nevada, United States		59
+82listings.json		New York, New York, United States		276
+83listings.json		Columbus, Ohio, United States		8
+84listings.json		Portland, Oregon, United States		39
+85listings.json		Salem, Oregon, United States		1
+86listings.json		US		21
+87listings.json		Nashville, Tennessee, United States		50
+88listings.json		Austin, Texas, United States		69
+89listings.json		Seattle, Washington, United States		60
