@@ -3,13 +3,12 @@ using Xunit;
 
 namespace mongoCluster.Tests
 {
-    public class UnitTest1
+    public class ProgramTest
     {
         [Fact]
-        public void SolutionStructureCorrect_ConsolePrintSuccess()
+        public void SanityTest_ConsolePrint()
         {
-		Console.WriteLine("Program Test Correctly Referenced");
-
+            Console.WriteLine("Program Test Correctly Referenced");
         }
     }
 }
