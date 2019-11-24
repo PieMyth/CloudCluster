@@ -9,7 +9,7 @@ using NLog;
 
 namespace mongoCluster
 {
-    class Driver
+    public class Driver
     {
         // Logging
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -54,22 +54,6 @@ namespace mongoCluster
         public bool establishConnection()
         {
             return this._establishConnection();
-        }
-
-        /// <summary>Establishes connection to database</summary>
-        /// <returns>True if connection was established, False, otherwise</returns>
-        private bool _establishConnection()
-        {
-            try
-            {
-                this._client = new MongoClient(_connection);
-            }
-            catch (MongoConfigurationException err)
-            {
-                Console.WriteLine($"Configuration error: {err}");
-                throw new UnauthorizedAccessException();
-            }
-            return true;
         }
 
         /// <summary>Accesses and returns a specified database</summary>
@@ -118,6 +102,22 @@ namespace mongoCluster
             return true;
         }
 
+        /// <summary>Establishes connection to database</summary>
+        /// <returns>True if connection was established, False, otherwise</returns>
+        private bool _establishConnection()
+        {
+            try
+            {
+                this._client = new MongoClient(_connection);
+            }
+            catch (MongoConfigurationException err)
+            {
+                Console.WriteLine($"Configuration error: {err}");
+                throw new UnauthorizedAccessException();
+            }
+            return true;
+        }
+
         /// <summary>Accesses and returns a specified database</summary>
         /// <returns>True if database was successfully accessed, false otherwise</returns>
         private bool _getDatabase()
@@ -133,7 +133,6 @@ namespace mongoCluster
             }
 
             if (this._db != null) { 
-                Console.WriteLine($"\nConnection successfully established with database '{_dbName}'.");
                 return true;
             }
             return false;
