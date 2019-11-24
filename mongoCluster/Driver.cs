@@ -15,7 +15,7 @@ namespace mongoCluster
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         // Atlas cluster connection string
-        private const String _connection = "mongodb+srv://username:userpassword@cluster0-lgn2s.gcp.mongodb.net/test?retryWrites=true&w=majority";
+        private const String _connection = "mongodb+srv://testuser:testpw@cluster0-lgn2s.gcp.mongodb.net/test?retryWrites=true&w=majority";
 
         // database name
         private const String _dbName = "airbnb";

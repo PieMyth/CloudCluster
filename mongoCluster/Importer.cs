@@ -70,15 +70,12 @@ namespace mongoCluster
             // Loop through all files in the directory
             var files = System.IO.Directory.EnumerateFiles(src);
 
-            Console.WriteLine($"files: {files}");
-
             LongHolder total_count = new LongHolder();
 
             // Use Regex to get the file extension
             Regex pattern = new Regex(@"\.[a-zA-Z]+$");
             foreach (string file in files)
             {
-                Console.WriteLine($"file: {file}");
                 logger.Debug($"Importing file: {file}");
                 long count = 0;
                 // Check file format

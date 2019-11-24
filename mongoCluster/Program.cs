@@ -6,19 +6,19 @@ namespace mongoCluster
     {
         private const string _listings = "listings";
         private const string _reviews = "reviews";
+        private const bool importData = false;   // true if importing data with C# instead of python script
 
         static void Main(string[] args)
         {
             Driver driver = new Driver();
-            bool importData = true;   // true if importing data with C# instead of python script
-
 
             if (!connect(ref driver)) {
                 Console.WriteLine("Driver failed to connect to database. Exiting Program.");
                 Environment.Exit(1);
             }
 
-            // Import data to db from specified folders
+            // Import data to db if using C# to import data
+            // by default set to false as data is already loaded with a python script
             if (importData)
             {
                 Importer import = new Importer();
