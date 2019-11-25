@@ -1,10 +1,14 @@
 using System;
+using NLog;
 
 namespace mongoCluster
 {
     // The Program class handles the C# driver and queries from beginning to end
     class Program
     {
+        // For logging
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         // Valid collections
         private const string _listings = "listings";
         private const string _reviews = "reviews";
@@ -18,7 +22,7 @@ namespace mongoCluster
             Driver driver = new Driver();
 
             if (!connect(ref driver)) {
-                Console.WriteLine("Driver failed to connect to database. Exiting Program.");
+                logger.Error("Driver failed to connect to database. Exiting Program.");
                 Environment.Exit(1);
             }
 
@@ -28,7 +32,7 @@ namespace mongoCluster
             {
                 Importer import = new Importer();
                 if (!import.begin(ref driver)) { 
-                    Console.WriteLine("Data import failed. Exiting Program.");
+                    logger.Error("Data import failed. Exiting Program.");
                     Environment.Exit(1);
                 }
             }
@@ -40,48 +44,48 @@ namespace mongoCluster
                 long totalListings = driver.queryCountDocuments(_listings);
                 if (totalListings.Equals(0))
                 {
-                    Console.WriteLine("Queries are not working as expected. Ending Program.");
+                    logger.Error("Queries are not working as expected. Ending Program.");
                     Environment.Exit(1);
                 }
                 else 
                 { 
-                    Console.WriteLine($"There are {totalListings} totalListings");
+                    logger.Info($"There are {totalListings} totalListings");
                 }
 
                 // Run a test query
                 if (!driver.queryTest(_listings)) {
-                    Console.WriteLine("Test query failed");
+                    logger.Error("Test query failed");
                 }
 
                 // Query 1: A count query
                 if (!driver.queryCount(_listings)) {
-                    Console.WriteLine("Query1: Count query failed");
+                    logger.Error("Query1: Count query failed");
                 }
 
                 // Query 2: Sorted Subset
-                if (driver.querySortedSubset(_listings)) { 
-                    Console.WriteLine("Query2: Sorted subset driver.query failed");
+                if (driver.querySortedSubset(_listings)) {
+                    logger.Error("Query2: Sorted subset driver.query failed");
                 }
 
 
                 // Query 3: Subset-search
-                if (driver.querySubsetSearch(_listings)) { 
-                    Console.WriteLine("Query3: Subset search driver.query failed");
+                if (driver.querySubsetSearch(_listings)) {
+                    logger.Error("Query3: Subset search driver.query failed");
                 }
 
                 // Query 4: Average
-                if (driver.queryAverage(_listings)) { 
-                    Console.WriteLine("Query4: Average driver.query failed");
+                if (driver.queryAverage(_listings)) {
+                    logger.Error("Query4: Average driver.query failed");
                 }
 
                 // Query 5: Join
-                if (driver.queryJoin(_listings, _reviews)) { 
-                    Console.WriteLine("Query5: Join driver.query failed");
+                if (driver.queryJoin(_listings, _reviews)) {
+                    logger.Error("Query5: Join driver.query failed");
                 }
 
                 // Query 6: Update
-                if (driver.queryUpdate(_listings)) { 
-                    Console.WriteLine("Query6: Update query failed");
+                if (driver.queryUpdate(_listings)) {
+                    logger.Error("Query6: Update query failed");
                 }
 
                 // Keep terminal open when program finishes
@@ -106,15 +110,15 @@ namespace mongoCluster
             }
             catch (UnauthorizedAccessException)
             {
-                Console.WriteLine("\nConnection was not established. Please check configuration, credentials and connection details");
+                logger.Error("\nConnection was not established. Please check configuration, credentials and connection details");
             }
             catch (NullReferenceException)
             {
-                Console.WriteLine("\nConnection was not established. The database may not exist.");
+                logger.Error("\nConnection was not established. The database may not exist.");
             }
             catch (ArgumentException)
             {
-                Console.WriteLine("\nConnection was not established. An invalid name was used for access.");
+                logger.Error("\nConnection was not established. An invalid name was used for access.");
             }
             return false;
         }
