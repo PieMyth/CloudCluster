@@ -26,6 +26,8 @@ namespace mongoCluster
         IList<Tuple<string, string, int>> sources = new List<Tuple<string, string, int>>();
         private const string _listingsDir = "C:/Users/Whyve/Documents/CS488/Dataset/CSV/Listings";
         private const string _reviewsDir = "C:/Users/Whyve/Documents/CS488/Dataset/CSV/Reviews";
+        private const string _listingsCollectionName = "listings";
+        private const string _reviewsCollectionName = "reviews";
         private static Logger logger = LogManager.GetCurrentClassLogger();  // for logging purposes
 
 
@@ -37,8 +39,8 @@ namespace mongoCluster
         private bool _begin(ref Driver driver)
         { 
             // Tuple contains (collection_name, import_folder, import_chunk_size)
-            sources.Add(Tuple.Create("listings", @_listingsDir, 1000));
-            sources.Add(Tuple.Create("reviews", @_reviewsDir, 25000));
+            sources.Add(Tuple.Create(_listingsCollectionName, @_listingsDir, 1000));
+            sources.Add(Tuple.Create(_reviewsCollectionName, @_reviewsDir, 25000));
 
             logger.Info("Importing Data");
             foreach (Tuple<string, string, int> src in sources)
