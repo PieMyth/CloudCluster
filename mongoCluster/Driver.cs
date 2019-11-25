@@ -9,7 +9,7 @@ using NLog;
 
 namespace mongoCluster
 {
-    class Driver
+    public class Driver
     {
         // Logging
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -56,27 +56,18 @@ namespace mongoCluster
             return this._establishConnection();
         }
 
-        /// <summary>Establishes connection to database</summary>
-        /// <returns>True if connection was established, False, otherwise</returns>
-        private bool _establishConnection()
-        {
-            try
-            {
-                this._client = new MongoClient(_connection);
-            }
-            catch (MongoConfigurationException err)
-            {
-                Console.WriteLine($"Configuration error: {err}");
-                throw new UnauthorizedAccessException();
-            }
-            return true;
-        }
-
         /// <summary>Accesses and returns a specified database</summary>
         /// <returns>True if database was successfully accessed, false otherwise</returns>
         public bool getDatabase()
         {
             return this._getDatabase();
+        }
+
+        /// <summary>Check if a collection exists</summary>
+        /// <returns>True if collection exists, False otherwise</returns>
+        public bool collectionExists(String collectionName)
+        {
+            return _collectionExists(collectionName);
         }
 
         /// <summary>Accesses and retrieves a specified collection</summary>
@@ -118,6 +109,22 @@ namespace mongoCluster
             return true;
         }
 
+        /// <summary>Establishes connection to database</summary>
+        /// <returns>True if connection was established, False, otherwise</returns>
+        private bool _establishConnection()
+        {
+            try
+            {
+                this._client = new MongoClient(_connection);
+            }
+            catch (MongoConfigurationException err)
+            {
+                Console.WriteLine($"Configuration error: {err}");
+                throw new UnauthorizedAccessException();
+            }
+            return true;
+        }
+
         /// <summary>Accesses and returns a specified database</summary>
         /// <returns>True if database was successfully accessed, false otherwise</returns>
         private bool _getDatabase()
@@ -133,24 +140,36 @@ namespace mongoCluster
             }
 
             if (this._db != null) { 
-                Console.WriteLine($"\nConnection successfully established with database '{_dbName}'.");
                 return true;
             }
             return false;
+        }
+
+        /// <summary>Check if a collection exists</summary>
+        /// <returns>True if collection exists, False otherwise</returns>
+        private bool _collectionExists(String collectionName)
+        {
+            // modified from https://stackoverflow.com/questions/25017219/how-to-check-if-collection-exists-in-mongodb-using-c-sharp-driver
+            BsonDocument filter = new BsonDocument("name", collectionName);
+            var collections = new ListCollectionNamesOptions { Filter = filter };
+            return _db.ListCollectionNames(collections).Any();
         }
 
         /// <summary>Accesses and returns a specified collection</summary>
         /// <returns>True if successfully accessed, False, otherwise</returns>
         private bool _getCollection(String collectionName)
         {
+            if (!this._collectionExists(collectionName))
+                return false;
+
             try
             {
                 this._collection = this._db.GetCollection<BsonDocument>(collectionName);
             }
-            catch (ArgumentException err)
+            catch (ArgumentNullException err)
             {
                 Console.WriteLine($"\nThe collection name must be composed of valid characters:\n{err}");
-                throw new ArgumentException();
+                throw new ArgumentNullException();
             }
             return true;
         }
