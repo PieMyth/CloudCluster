@@ -2,12 +2,17 @@ using System;
 
 namespace mongoCluster
 {
+    // The Program class handles the C# driver and queries from beginning to end
     class Program
     {
+        // Valid collections
         private const string _listings = "listings";
         private const string _reviews = "reviews";
-        private const bool importData = false;   // true if importing data with C# instead of python script
 
+        // Import boolean: true if importing data with C# instead of python script
+        private const bool importData = false;
+
+        // Main: a Driver instance is created, connected, and queries are run 
         static void Main(string[] args)
         {
             Driver driver = new Driver();
@@ -28,13 +33,28 @@ namespace mongoCluster
                 }
             }
 
+            // Run queries specific to the Listings collection if a successful connection is established
             if (driver.getCollection(_listings))
             {
-                if (!driver.testQuery()) {
+                // Run a simple query that counts the total number of listings
+                long totalListings = driver.queryCountDocuments(_listings);
+                if (totalListings.Equals(0))
+                {
+                    Console.WriteLine("Queries are not working as expected. Ending Program.");
+                    Environment.Exit(1);
+                }
+                else 
+                { 
+                    Console.WriteLine($"There are {totalListings} totalListings");
+                }
+
+                // Run a test query
+                if (!driver.testQuery(_listings)) {
                     Console.WriteLine("Test query failed");
                 }
 
-                if (!driver.countQuery()) {
+                // Query 1: A count query
+                if (!driver.countQuery(_listings)) {
                     Console.WriteLine("Count query failed");
                 }
 
