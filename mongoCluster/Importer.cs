@@ -24,8 +24,8 @@ namespace mongoCluster
     class Importer
     {
         IList<Tuple<string, string, int>> sources = new List<Tuple<string, string, int>>();
-        private const string _listingsDir = "C:/Users/mduer/git/CloudCluster/mongoCluster/Dataset/CSV/Listings";
-        private const string _reviewsDir = "C:/Users/mduer/git/CloudCluster/mongoCluster/Dataset/CSV/Reviews";
+        private const string _listingsDir = "C:/Users/Whyve/Documents/CS488/Dataset/CSV/Listings";
+        private const string _reviewsDir = "C:/Users/Whyve/Documents/CS488/Dataset/CSV/Reviews";
         private static Logger logger = LogManager.GetCurrentClassLogger();  // for logging purposes
 
 
@@ -37,22 +37,24 @@ namespace mongoCluster
         private bool _begin(ref Driver driver)
         { 
             // Tuple contains (collection_name, import_folder, import_chunk_size)
-            sources.Add(Tuple.Create("Listings", @_listingsDir, 1000));
-            sources.Add(Tuple.Create("Reviews", @_reviewsDir, 25000));
+            sources.Add(Tuple.Create("listings", @_listingsDir, 1000));
+            sources.Add(Tuple.Create("reviews", @_reviewsDir, 25000));
 
-            Console.WriteLine($"Importing Data");
+            logger.Info("Importing Data");
             foreach (Tuple<string, string, int> src in sources)
             {
                 // Set the collection name to the first element in the tuple
-                if (driver.getCollection(src.Item1)) 
-                { 
-                    logger.Info($"Importing documets from '{src.Item2}'...");
-
-                    // Import all .json and .csv files from the location specified in the second element of the tuple
-                    // The third element of the tuple specifies the max amt of rows to be read at a time before inserting to db
-                    var count = importFolder(src.Item2, driver.Collections[src.Item1], src.Item3);
-                    logger.Info($"Imported {count.Result.counter} documents from {src.Item2}!");
+                if (!driver.getCollection(src.Item1))
+                {
+                    logger.Info($"Creating collection {src.Item1}");
                 }
+                
+                logger.Info($"Importing documets from '{src.Item2}'...");
+
+                // Import all .json and .csv files from the location specified in the second element of the tuple
+                // The third element of the tuple specifies the max amt of rows to be read at a time before inserting to db
+                var count = importFolder(src.Item2, driver.Collections[src.Item1], src.Item3);
+                logger.Info($"Imported {count.Result.counter} documents from {src.Item2}!");
             }
             return true;
         }
@@ -63,7 +65,7 @@ namespace mongoCluster
             // Check that src directory exists
             if (!System.IO.Directory.Exists(src))
             {
-                Console.WriteLine($"Directory doesn't exist. Check if path is correct: {src}");
+                logger.Error($"Directory doesn't exist. Check if path is correct: {src}");
                 throw new DirectoryNotFoundException();
             }
 
@@ -76,7 +78,7 @@ namespace mongoCluster
             Regex pattern = new Regex(@"\.[a-zA-Z]+$");
             foreach (string file in files)
             {
-                logger.Debug($"Importing file: {file}");
+                logger.Info($"Importing file: {file}");
                 long count = 0;
                 // Check file format
                 switch (pattern.Match(file).Value)
