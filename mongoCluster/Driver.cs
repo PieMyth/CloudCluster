@@ -115,13 +115,8 @@ namespace mongoCluster
             {
                 Console.WriteLine('\n' + new string('-', 100) + '\n');
                 logger.Debug($"Querying with price_limit={input.Item1} and min_nights_limit={input.Item2}");
-                Console.WriteLine($"Querying with price_limit={input.Item1} and min_nights_limit={input.Item2}");
-
                 var count = _queryTest(this._collections[collectionName], input.Item1, input.Item2);
-                Console.WriteLine($"count: {count}");
-
                 logger.Info($"Returned {count.Result} records!");
-                Console.WriteLine($"Returned {count.Result} records!");
             }
             return true;
         }
