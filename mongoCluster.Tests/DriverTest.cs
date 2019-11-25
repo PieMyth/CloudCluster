@@ -5,6 +5,9 @@ namespace mongoCluster.Tests
 {
     public class DriverTest
     {
+        private const string _listings = "listings";
+        private const string _reviews = "reviews";
+
         [Fact]
         public void establishConnectionTest_connectionSuccessfullyEstablished()
         {
@@ -23,8 +26,8 @@ namespace mongoCluster.Tests
         }
 
         [Theory]
-        [InlineData("listings")]
-        [InlineData("reviews")]
+        [InlineData(_listings)]
+        [InlineData(_reviews)]
         public void collectionExistsTest_returnsTrue(String validCollection)
         {
             Driver driver = new Driver();
@@ -34,8 +37,8 @@ namespace mongoCluster.Tests
         }
 
         [Theory]
-        [InlineData("listings")]
-        [InlineData("reviews")]
+        [InlineData(_listings)]
+        [InlineData(_reviews)]
         public void getCollectionTest_collectionSuccessfullyConnected(String validCollection)
         {
             Driver driver = new Driver();
@@ -55,6 +58,7 @@ namespace mongoCluster.Tests
             Assert.False(driver.collectionExists(invalidCollection));
         }
 
+        [Theory]
         [InlineData(null)]
         public void collectionExistsTest_nullValueThrowsException(String nullValue)
         {
@@ -84,5 +88,16 @@ namespace mongoCluster.Tests
             driver.getDatabase();
             Assert.Throws<ArgumentNullException>(() => driver.getCollection(nullValue));
         }
+
+        [Fact]
+        public void queryCountDocumentsTest_countGreaterThanFiveThousand()
+        { 
+            Driver driver = new Driver();
+            driver.establishConnection();
+            driver.getDatabase();
+            driver.getCollection(_listings);
+            Assert.True(driver.queryCountDocuments(_listings) > 50000);
+        }
+
     }
 }
