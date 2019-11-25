@@ -17,7 +17,7 @@ namespace mongoCluster
 
         // Atlas cluster connection string
         private const String _connection = "mongodb+srv://testuser:testpw@cluster0-lgn2s.gcp.mongodb.net/test?retryWrites=true&w=majority";
-
+        
         // database name
         private const String _dbName = "airbnb";
 
@@ -199,7 +199,7 @@ namespace mongoCluster
             }
             catch (MongoConfigurationException err)
             {
-                Console.WriteLine($"Configuration error: {err}");
+                logger.Error($"Configuration error: {err}");
                 throw new UnauthorizedAccessException();
             }
             return true;
@@ -240,18 +240,20 @@ namespace mongoCluster
         private bool _getCollection(String collectionName)
         {
             if (!this._collectionExists(collectionName))
+            {
+                try
+                {
+                    // Adds a collection if it doesn't exist
+                    this._collections.TryAdd(collectionName, this._db.GetCollection<BsonDocument>(collectionName));
+                }
+                catch (ArgumentNullException err)
+                {
+                    logger.Error($"\nThe collection name must be composed of valid characters:\n{err}");
+                    throw new ArgumentNullException();
+                }
+            }
+            if (!this._collectionExists(collectionName))
                 return false;
-
-            try
-            {
-                // Adds a collection if it doesn't exist
-                this._collections.TryAdd(collectionName, this._db.GetCollection<BsonDocument>(collectionName));
-            }
-            catch (ArgumentNullException err)
-            {
-                Console.WriteLine($"\nThe collection name must be composed of valid characters:\n{err}");
-                throw new ArgumentNullException();
-            }
             return true;
         }
 
@@ -276,7 +278,7 @@ namespace mongoCluster
         {
             long count = 0;
 
-            Console.WriteLine($"Here are all of the {min_nights_limit}-night stays that cost at most ${price_limit}:");
+            logger.Info($"Here are all of the {min_nights_limit}-night stays that cost at most ${price_limit}:");
             Console.WriteLine(new string('-', 50));
 
             // Create the query filter (WHERE)
@@ -301,7 +303,7 @@ namespace mongoCluster
                                 Console.Write($"Book out at listing #{result["id"]} in {result["neighbourhood_cleansed"]} - {result["smart_location"]}");
                                 if (result.ContainsKey("accomodates"))
                                 {
-                                    Console.Write($", which accomodates {result["accomodates"]} people ");
+                                    Console.WriteLine($", which accomodates {result["accomodates"]} people ");
                                 }
                                 Console.WriteLine($" for the lovely {result["minimum_nights_avg_ntm"]} price of ${result["price"]}!");
                             });
