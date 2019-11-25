@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,6 +15,9 @@ namespace mongoCluster
     {
         // Logging
         private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        // Output folder for query results
+        private const String _outputFolder = @"query_output";
 
         // Atlas cluster connection string
         private const String _connection = "mongodb+srv://testuser:testpw@cluster0-lgn2s.gcp.mongodb.net/test?retryWrites=true&w=majority";
@@ -82,6 +86,37 @@ namespace mongoCluster
             return this._getCollection(collectionName);
         }
 
+        /// <summary>Appends a path segment to the current working directory</summary>
+        /// <param name="pathName">The path segment to append</param>
+        /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
+        private String _getOutputPath(String pathName)
+        {  
+            // The project root folder, "mongoCluster", is  ~/bin/Debug/netcoreapp3.0/<assemblyExecutable.exe
+            return Path.Combine(
+                    Path.Combine(
+                        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                        "../../..")
+                   , @pathName);
+        }
+
+        /// <summary>Creates the path to a file if it does not already exist</summary>
+        /// <param name="filePath">Path to the file to create</param>
+        /// <returns>True if path exists or was created successfully, False, otherwise</returns>
+        private bool _createFile(ref FileInfo filePath)
+        {
+            try
+            {
+                // Does nothing if file already exists
+                filePath.Directory.Create();
+            }
+            catch (System.IO.IOException err)
+            {
+                logger.Error($"Failed to create query output directory: {err}");
+                return false;
+            }
+            return true;
+        }
+
         /// <summary>A Query that counts the total number of documents in a collection</summary>
         /// <param name="collectionName">The string collection to query</param>
         /// <returns>A total count of documents of long type</returns>
@@ -125,17 +160,41 @@ namespace mongoCluster
         /// <param name="collectionName">String name of collection</param>
         /// <returns>True if successful, False otherwise</returns>
         public bool queryCount(String collectionName)
-        { 
-            // Run query 1 - Count query
-            Console.WriteLine('\n' + new string('-', 100) + '\n');
-            logger.Info("Query 1 - Count query");
-            // Using zipcode range (I'm only doing downtown portland zip codes)
-            Task<long> queryCountResult = this._queryCount(this._collections[collectionName], 2, 97201, 97210);
-            logger.Info($"There are {queryCountResult.Result} listings with over 2 bedrooms in zipcode range from 97201 - 972010.");
+        {
+            // Create the absolute path to the output .txt file for this query
+            String filePath = _getOutputPath(Path.Combine(_outputFolder, "queryCount.txt"));
+            System.IO.FileInfo file = new System.IO.FileInfo(_getOutputPath(filePath));
 
-            // Using city name
-            Task<long> otherCountQueryResult = this._queryCount(this._collections[collectionName], 2, city_limit: "Portland");
-            logger.Info($"There are {otherCountQueryResult.Result} listings with over 2 bedrooms in the city of Portland.");
+            // Create the directories for the output path if they do not already exist
+            if (!_createFile(ref file))
+                return false;
+            
+            // Open external file for storing query output, clears out previous text
+            using (System.IO.StreamWriter fout =
+                new System.IO.StreamWriter(file.FullName))
+            {
+                String output;
+
+                // Run query 1 - Count query
+                Console.WriteLine('\n' + new string('-', 100) + '\n');
+                output = "Query 1 - Count query";
+                logger.Info(output);
+                fout.WriteLine(output);
+
+                // Using zipcode range (I'm only doing downtown portland zip codes)
+                Task<long> queryCountResult = this._queryCount(this._collections[collectionName], 2, 97201, 97210);
+                output = $"There are {queryCountResult.Result} listings with over 2 bedrooms in zipcode range from 97201 - 972010.";
+                logger.Info(output);
+                fout.WriteLine(output);
+
+                // Using city name
+                Task<long> otherCountQueryResult = this._queryCount(this._collections[collectionName], 2, city_limit: "Portland");
+                output = $"There are {otherCountQueryResult.Result} listings with over 2 bedrooms in the city of Portland.";
+                logger.Info(output);
+                fout.WriteLine(output);
+
+
+            }
             return true;
         }
 
@@ -239,18 +298,15 @@ namespace mongoCluster
         /// <returns>True if successfully accessed, False, otherwise</returns>
         private bool _getCollection(String collectionName)
         {
-            if (!this._collectionExists(collectionName))
+            try
             {
-                try
-                {
-                    // Adds a collection if it doesn't exist
-                    this._collections.TryAdd(collectionName, this._db.GetCollection<BsonDocument>(collectionName));
-                }
-                catch (ArgumentNullException err)
-                {
-                    logger.Error($"\nThe collection name must be composed of valid characters:\n{err}");
-                    throw new ArgumentNullException();
-                }
+                // Adds a collection if it doesn't exist
+                this._collections.TryAdd(collectionName, this._db.GetCollection<BsonDocument>(collectionName));
+            }
+            catch (ArgumentNullException err)
+            {
+                logger.Error($"\nThe collection name must be composed of valid characters:\n{err}");
+                throw new ArgumentNullException();
             }
             if (!this._collectionExists(collectionName))
                 return false;
@@ -263,6 +319,8 @@ namespace mongoCluster
         private long _queryCountDocuments(String collectionName)
         {
             BsonDocument filter = new BsonDocument();
+            if (!this._getCollection(collectionName))
+                return 0;
             return this._collections[collectionName].CountDocuments(filter);
         }
 
