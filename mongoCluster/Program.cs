@@ -33,16 +33,28 @@ namespace mongoCluster
                 }
             }
 
-            // Run queries if collection exists and a connection is established
+            // Run queries specific to the Listings collection if a successful connection is established
             if (driver.getCollection(_listings))
             {
+                // Run a simple query that counts the total number of listings
+                long totalListings = driver.queryCountDocuments(_listings);
+                if (totalListings.Equals(0))
+                {
+                    Console.WriteLine("Queries are not working as expected. Ending Program.");
+                    Environment.Exit(1);
+                }
+                else 
+                { 
+                    Console.WriteLine($"There are {totalListings} totalListings");
+                }
+
                 // Run a test query
-                if (!driver.testQuery()) {
+                if (!driver.testQuery(_listings)) {
                     Console.WriteLine("Test query failed");
                 }
 
                 // Query 1: A count query
-                if (!driver.countQuery()) {
+                if (!driver.countQuery(_listings)) {
                     Console.WriteLine("Count query failed");
                 }
 

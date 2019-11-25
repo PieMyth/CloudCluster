@@ -50,7 +50,7 @@ namespace mongoCluster
 
                     // Import all .json and .csv files from the location specified in the second element of the tuple
                     // The third element of the tuple specifies the max amt of rows to be read at a time before inserting to db
-                    var count = importFolder(src.Item2, driver.Collection, src.Item3);
+                    var count = importFolder(src.Item2, driver.Collections[src.Item1], src.Item3);
                     logger.Info($"Imported {count.Result.counter} documents from {src.Item2}!");
                 }
             }
