@@ -22,7 +22,7 @@ namespace mongoCluster
             Driver driver = new Driver();
 
             if (!connect(ref driver)) {
-                logger.Error("Driver failed to connect to database. Exiting Program.");
+                logger.Fatal("Driver failed to connect to database. Exiting Program.");
                 Environment.Exit(1);
             }
 
@@ -32,7 +32,7 @@ namespace mongoCluster
             {
                 Importer import = new Importer();
                 if (!import.begin(ref driver)) { 
-                    logger.Error("Data import failed. Exiting Program.");
+                    logger.Fatal("Data import failed. Exiting Program.");
                     Environment.Exit(1);
                 }
             }
@@ -44,7 +44,7 @@ namespace mongoCluster
                 long totalListings = driver.queryCountDocuments(_listings);
                 if (totalListings.Equals(0))
                 {
-                    logger.Error("Queries are not working as expected. Ending Program.");
+                    logger.Fatal("Queries are not working as expected. Ending Program.");
                     Environment.Exit(1);
                 }
                 else 
