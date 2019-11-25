@@ -49,13 +49,39 @@ namespace mongoCluster
                 }
 
                 // Run a test query
-                if (!driver.testQuery(_listings)) {
+                if (!driver.queryTest(_listings)) {
                     Console.WriteLine("Test query failed");
                 }
 
                 // Query 1: A count query
-                if (!driver.countQuery(_listings)) {
-                    Console.WriteLine("Count query failed");
+                if (!driver.queryCount(_listings)) {
+                    Console.WriteLine("Query1: Count query failed");
+                }
+
+                // Query 2: Sorted Subset
+                if (driver.querySortedSubset(_listings)) { 
+                    Console.WriteLine("Query2: Sorted subset driver.query failed");
+                }
+
+
+                // Query 3: Subset-search
+                if (driver.querySubsetSearch(_listings)) { 
+                    Console.WriteLine("Query3: Subset search driver.query failed");
+                }
+
+                // Query 4: Average
+                if (driver.queryAverage(_listings)) { 
+                    Console.WriteLine("Query4: Average driver.query failed");
+                }
+
+                // Query 5: Join
+                if (driver.queryJoin(_listings, _reviews)) { 
+                    Console.WriteLine("Query5: Join driver.query failed");
+                }
+
+                // Query 6: Update
+                if (driver.queryUpdate(_listings)) { 
+                    Console.WriteLine("Query6: Update query failed");
                 }
 
                 // Keep terminal open when program finishes

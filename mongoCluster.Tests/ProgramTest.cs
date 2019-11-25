@@ -6,9 +6,10 @@ namespace mongoCluster.Tests
     public class ProgramTest
     {
         [Fact]
-        public void SanityTest_ConsolePrint()
+        public void SolutionSanityTest_AssertSuccessful()
         {
-            Console.WriteLine("Program Test Correctly Referenced");
+            String test = "Solution correctly ties Program and ProgramTest";
+            Assert.NotNull(test);
         }
     }
 }
