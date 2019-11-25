@@ -13,8 +13,10 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
 6. [Stretch Goals](#Stretch-Goals)
 7. [Resources](#Resources)
     * [Tooling Versions](#Tooling-Versions)
+
 <br>
 <hr/>
+
 ## Build / Run
 * Clone the project: `git clone git@github.com:PieMyth/CloudCluster.git`
 
@@ -27,8 +29,9 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
 * Test the project by going into the test directory *\*/CloudCluster/mongoCluster.Test/* and run the command :  
 
   ​    `dotnet test`
-  <br>
+<br>
 <hr/>
+
 ## Visual Studio Setup
 1. Select the solution in order to build the driver correctly. This can be found in the `CloudCluster` directory: `CloudCluster.sln`
 2. Copy the connection string and put it in the connection_string variable in the program file
@@ -46,6 +49,7 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
     - Note: Do not have the imported file open in any other programs, or VS can't get a lock on the file
 <br>
 <hr/>
+
 ## Atlas Setup
 1. Navigate to the MongoDB Atlas website
 1. Build a new cluster
@@ -81,6 +85,7 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
 1. You do not need to turn on or turn off clusters as Atlas manages this for you
 <br>
 <hr/>
+
 ## GCP Setup
 From the first link, 'MongoDB on Compute Engine'...
 1. Click *Launch on Compute Engine*
@@ -119,6 +124,7 @@ From the first link, 'MongoDB on Compute Engine'...
 1. Save
 <br>
 <hr/>
+
 ## TODOs
 - Try and catch blocks for queries and db connection attempts
 - Set up tests for TDD?
@@ -132,6 +138,7 @@ From the first link, 'MongoDB on Compute Engine'...
 - Add code for reporting query performance (ex. python's pychart library)
 <br>
 <hr/>
+
 ## Stretch Goals
 - Execute import & queries asynchronously
 - Log errors onto a local file (set this up in the Nlog.Config file)
@@ -147,6 +154,7 @@ From the first link, 'MongoDB on Compute Engine'...
     - If we figure out the service account, this is very do-able! It would just be a change of connection string.
 <br>
 <hr/>
+
 ## Resources
 <i>
 
