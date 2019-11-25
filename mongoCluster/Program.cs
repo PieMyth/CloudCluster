@@ -49,7 +49,7 @@ namespace mongoCluster
                 }
 
                 // Run a test query
-                if (!driver.testQuery(_listings)) {
+                if (!driver.queryTest(_listings)) {
                     Console.WriteLine("Test query failed");
                 }
 

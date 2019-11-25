@@ -28,6 +28,7 @@ namespace mongoCluster
             set => this._db = value;
         }
 
+        // the mongo client
         private MongoClient _client;
         public MongoClient Client
         {
@@ -35,6 +36,8 @@ namespace mongoCluster
             set { this._client = value; }
         }
 
+        // dictionary of collections where the key="collectionName" and value is an IMongoCollection
+        // created through a successful connection to the collection
         private Dictionary<string, IMongoCollection<BsonDocument>> _collections;
 
         public Dictionary<string, IMongoCollection<BsonDocument>> Collections
@@ -42,6 +45,7 @@ namespace mongoCluster
             get { return this._collections; }
         }
 
+        /// <summary>Default constructor</summary>
         public Driver()
         {
             _client = null;
@@ -91,7 +95,7 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collectionName">The string collection to query</param>
         /// <returns>Returns the amount of documents from query</returns>
-        public bool testQuery(String collectionName)
+        public bool queryTest(String collectionName)
         {
             // a list of tuples containing (price_limit, min_nights_limit)
             List<Tuple<int, int>> testInputs = new List<Tuple<int, int>>();
@@ -112,7 +116,7 @@ namespace mongoCluster
                 logger.Debug($"Querying with price_limit={input.Item1} and min_nights_limit={input.Item2}");
                 Console.WriteLine($"Querying with price_limit={input.Item1} and min_nights_limit={input.Item2}");
 
-                var count = _testQuery(this._collections[collectionName], input.Item1, input.Item2);
+                var count = _queryTest(this._collections[collectionName], input.Item1, input.Item2);
                 Console.WriteLine($"count: {count}");
 
                 logger.Info($"Returned {count.Result} records!");
@@ -121,6 +125,9 @@ namespace mongoCluster
             return true;
         }
 
+        /// <summary>Query 1: Find the number of listings available with greater than 2 bedrooms in Portland.</summary>
+        /// <param name="collectionName">String name of collection</param>
+        /// <returns>True if successful, False otherwise</returns>
         public bool countQuery(String collectionName)
         { 
             // Run query 1 - Count query
@@ -219,7 +226,7 @@ namespace mongoCluster
         /// <param name="price_limit">A maximum limit on the total price for the minimum number of nights</param>
         /// <param name="min_nights_limit">The minimum number of nights required in order to make the booking</param>
         /// <returns>Returns the amount of documents from query</returns>
-        private async Task<long> _testQuery(IMongoCollection<BsonDocument> collection, int price_limit, int min_nights_limit)
+        private async Task<long> _queryTest(IMongoCollection<BsonDocument> collection, int price_limit, int min_nights_limit)
         {
             long count = 0;
 
@@ -255,40 +262,46 @@ namespace mongoCluster
             return count;
         }
 
-        // Query 1: Count Query
-        // Find the number of listings available with greater than 2 bedrooms in Portland.
-        /*  Implementation Strategy:
-         *      1. Perform a filter where the city is equal to “Portland” ($eq) 
-         *      2. Perform a secondary filter where the number of bedrooms is greater than 2 ($gt)
-         */
+        /// <summary>Query 1: Find the number of listings available with greater than 2 bedrooms in Portland.</summary>
+        /// <param name="collection">String name of collection</param>
+        /// <param name="bedroom_limit">Integer representing maximum bedrooms</param>
+        /// <param name="zipcode_start_limit">Integer representing starting zipcode range</param>
+        /// <param name="zipcode_end_limit">Integer representing ending zipcode range</param>
+        /// <param name="city_limit">String defining a city as its own limit e.g. "Portland"</param>
+        /// <returns>A long integer of the result count</returns>
        private async Task<long> _countQuery(IMongoCollection<BsonDocument> collection, int bedroom_limit, 
                                            int zipcode_start_limit = -1, int zipcode_end_limit = -1, string city_limit = "")
        {
-           FilterDefinition<BsonDocument> filter;
-           // Try to query by zipcode range
-           if (zipcode_start_limit >= 0 && zipcode_end_limit > 0)
-           {
-               // Here's one way of doing the filter and...
-               var b = Builders<BsonDocument>.Filter;
-               filter = ( b.Gte("zipcode", zipcode_start_limit) 
-                        & b.Lte("zipcode", zipcode_end_limit) 
-                        & b.Gt("bedrooms", bedroom_limit));
-           } 
-           // Try to query by city name
-           else if (city_limit != "")
-           {
-               // ... here's another way of doing the filter!
-               filter = $"{{ city: {{$eq: \"{city_limit}\"}}" +
-                        $", bedrooms: {{$gt: {bedroom_limit} }} }}";
-           }
-           // Invalid zipcode range and invalid city name
-           else
-           {
-               throw new ArgumentException();
-           }
+            /*  Implementation Strategy:
+            *      1. Perform a filter where the city is equal to “Portland” ($eq) 
+            *      2. Perform a secondary filter where the number of bedrooms is greater than 2 ($gt)
+            */
+            FilterDefinition<BsonDocument> filter;
 
-           // Return the async task of running this query
-           return await collection.CountDocumentsAsync(filter);
+            // Try to query by zipcode range
+            if (zipcode_start_limit >= 0 && zipcode_end_limit > 0)
+            {
+                // Here's one way of doing the filter and...
+                var b = Builders<BsonDocument>.Filter;
+                filter = (b.Gte("zipcode", zipcode_start_limit) &
+                          b.Lte("zipcode", zipcode_end_limit) &
+                          b.Gt("bedrooms", bedroom_limit));
+            } 
+            // Try to query by city name
+            else if (city_limit != "")
+            {
+                // ... here's another way of doing the filter!
+                filter = $"{{ city: {{$eq: \"{city_limit}\"}}" +
+                         $", bedrooms: {{$gt: {bedroom_limit} }} }}";
+            }
+            // Invalid zipcode range and invalid city name
+            else
+            {
+                throw new ArgumentException();
+            }
+
+            // Return the async task of running this query
+            return await collection.CountDocumentsAsync(filter);
        }
     }
 }
