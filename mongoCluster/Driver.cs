@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Reflection;
 
 using MongoDB.Driver;
 using MongoDB.Bson;
@@ -162,7 +163,8 @@ namespace mongoCluster
         public bool queryCount(String collectionName)
         {
             // Create the absolute path to the output .txt file for this query
-            String filePath = _getOutputPath(Path.Combine(_outputFolder, "queryCount.txt"));
+            String fileName = MethodBase.GetCurrentMethod().Name + ".txt";
+            String filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
             System.IO.FileInfo file = new System.IO.FileInfo(_getOutputPath(filePath));
 
             // Create the directories for the output path if they do not already exist
@@ -174,6 +176,7 @@ namespace mongoCluster
                 new System.IO.StreamWriter(file.FullName))
             {
                 String output;
+                DateTime start;
 
                 // Run query 1 - Count query
                 Console.WriteLine('\n' + new string('-', 100) + '\n');
@@ -182,14 +185,18 @@ namespace mongoCluster
                 fout.WriteLine(output);
 
                 // Using zipcode range (I'm only doing downtown portland zip codes)
+                start = DateTime.UtcNow;
                 Task<long> queryCountResult = this._queryCount(this._collections[collectionName], 2, 97201, 97210);
                 output = $"There are {queryCountResult.Result} listings with over 2 bedrooms in zipcode range from 97201 - 972010.";
+                output += $"\nQuery run time: {DateTime.UtcNow - start}";
                 logger.Info(output);
                 fout.WriteLine(output);
 
                 // Using city name
+                start = DateTime.UtcNow;
                 Task<long> otherCountQueryResult = this._queryCount(this._collections[collectionName], 2, city_limit: "Portland");
                 output = $"There are {otherCountQueryResult.Result} listings with over 2 bedrooms in the city of Portland.";
+                output += $"\nQuery run time: {DateTime.UtcNow - start}";
                 logger.Info(output);
                 fout.WriteLine(output);
 
@@ -363,7 +370,7 @@ namespace mongoCluster
                                 {
                                     Console.WriteLine($", which accomodates {result["accomodates"]} people ");
                                 }
-                                Console.WriteLine($" for the lovely {result["minimum_nights_avg_ntm"]} price of ${result["price"]}!");
+                                Console.WriteLine($" for at least {result["minimum_nights_avg_ntm"]} people for the lovely price of ${result["price"]}!");
                             });
             return count;
         }
@@ -405,7 +412,6 @@ namespace mongoCluster
             {
                 throw new ArgumentException();
             }
-
             // Return the async task of running this query
             return await collection.CountDocumentsAsync(filter);
         }
@@ -423,6 +429,7 @@ namespace mongoCluster
             *      3. Limit to the top 5 results ($limit).
             */
             // TODO: stub
+
             return false;
         }
 
