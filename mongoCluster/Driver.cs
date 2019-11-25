@@ -46,7 +46,7 @@ namespace mongoCluster
         {
             _client = null;
             _db = null;
-            _collections = null;
+            _collections = new Dictionary<string, IMongoCollection<BsonDocument>>();
         }
 
         /// <summary>Establishes connection to database</summary>
