@@ -55,14 +55,40 @@ namespace mongoCluster
 
                 // Query 1: A count query
                 if (!driver.countQuery(_listings)) {
-                    Console.WriteLine("Count query failed");
+                    Console.WriteLine("Query1: Count query failed");
+                }
+
+                // Query 2: Sorted Subset
+                if (querySortedSubset(_listings)) { 
+                    Console.WriteLine("Query2: Sorted subset query failed");
+                }
+
+
+                // Query 3: Subset-search
+                if (querySubsetSearch(_listings)) { 
+                    Console.WriteLine("Query3: Subset search query failed");
+                }
+
+                // Query 4: Average
+                if (queryAverage(_listings)) { 
+                    Console.WriteLine("Query4: Average query failed");
+                }
+
+                // Query 5: Join
+                if (queryJoin(_listings, _reviews)) { 
+                    Console.WriteLine("Query5: Join query failed");
+                }
+
+                // Query 6: Update
+                if (queryUpdate(_listings)) { 
+                    Console.WriteLine("Query6: Update query failed");
                 }
 
                 // Keep terminal open when program finishes
                 Console.ReadLine();
             }
         }
-
+/collection
         /// <summary>create a C# driver for mongoDB that establishes a connection with the mongoDB database</summary>
         /// <param name="driver">A Driver instance</param>
         /// <returns>
