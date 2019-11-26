@@ -1,6 +1,7 @@
 using System;
 using NLog;
 
+
 namespace mongoCluster
 {
     // The Program class handles the C# driver and queries from beginning to end
@@ -18,7 +19,7 @@ namespace mongoCluster
 
         // Main: a Driver instance is created, connected, and queries are run 
         static void Main(string[] args)
-        {
+        { 
             Driver driver = new Driver();
 
             if (!connect(ref driver)) {

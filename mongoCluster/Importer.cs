@@ -1,3 +1,5 @@
+using System.Configuration;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,8 +26,8 @@ namespace mongoCluster
     class Importer
     {
         IList<Tuple<string, string, int>> sources = new List<Tuple<string, string, int>>();
-        private const string _listingsDir = "C:/Users/Whyve/Documents/CS488/Dataset/CSV/Listings";
-        private const string _reviewsDir = "C:/Users/Whyve/Documents/CS488/Dataset/CSV/Reviews";
+        private string _listingsDir = ConfigurationManager.AppSettings.Get("listingsFolder");
+        private string _reviewsDir = ConfigurationManager.AppSettings.Get("reviewsFolder");
         private const string _listingsCollectionName = "listings";
         private const string _reviewsCollectionName = "reviews";
         private static Logger logger = LogManager.GetCurrentClassLogger();  // for logging purposes
