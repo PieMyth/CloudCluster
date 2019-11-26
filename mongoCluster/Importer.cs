@@ -50,10 +50,17 @@ namespace mongoCluster
                 // Set the collection name to the first element in the tuple
                 if (!driver.getCollection(src.Item1))
                 {
-                    logger.Info($"Creating collection {src.Item1}");
+                    if (driver.addCollection(src.Item1))
+                    {
+                        logger.Info($"Creating collection: '{src.Item1}'");
+                    } else
+                    {
+                        logger.Error($"Failed to create collection: '{src.Item1}'!");
+                        return false;
+                    }
                 }
                 
-                logger.Info($"Importing documets from '{src.Item2}'...");
+                logger.Info($"Importing documents from '{src.Item2}'...");
 
                 // Import all .json and .csv files from the location specified in the second element of the tuple
                 // The third element of the tuple specifies the max amt of rows to be read at a time before inserting to db
