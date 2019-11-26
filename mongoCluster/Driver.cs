@@ -1,3 +1,6 @@
+using System.Configuration;
+using System.Collections.Specialized;
+
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -21,8 +24,12 @@ namespace mongoCluster
         private const String _outputFolder = @"query_output";
 
         // Atlas cluster connection string
-        private const String _connection = "mongodb+srv://testuser:testpw@cluster0-lgn2s.gcp.mongodb.net/test?retryWrites=true&w=majority";
-        
+        private String _connection = ConfigurationManager.AppSettings.Get("connectionStrings");
+        /*List<String> connections = ConfigurationManager.AppSettings.Get("connectionStrings")
+                                                                       .Split(',')
+                                                                       .Select(s => s.Trim())
+                                                                       .ToArray().ToList<String>(); */
+
         // database name
         private const String _dbName = "airbnb";
 
