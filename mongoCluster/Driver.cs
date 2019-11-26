@@ -94,6 +94,13 @@ namespace mongoCluster
             return this._getCollection(collectionName);
         }
 
+        /// <summary>Creates a new collection.</summary>
+        /// <returns>True if successfully created, False, if collection exists or failed to be created</returns>
+        public bool addCollection(String collectionName)
+        {
+            return this._addCollection(collectionName);
+        }
+
         /// <summary>Appends a path segment to the current working directory</summary>
         /// <param name="pathName">The path segment to append</param>
         /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
@@ -312,6 +319,9 @@ namespace mongoCluster
         /// <returns>True if successfully accessed, False, otherwise</returns>
         private bool _getCollection(String collectionName)
         {
+            if (!this._collectionExists(collectionName))
+                return false;
+
             try
             {
                 // Adds a collection if it doesn't exist
@@ -322,8 +332,26 @@ namespace mongoCluster
                 logger.Error($"\nThe collection name must be composed of valid characters:\n{err}");
                 throw new ArgumentNullException();
             }
-            if (!this._collectionExists(collectionName))
+            return true;
+        }
+
+        /// <summary>Creates a new collection.</summary>
+        /// <returns>True if successfully created, False, if collection exists or failed to be created</returns>
+        private bool _addCollection(String collectionName)
+        {
+            if (this._collectionExists(collectionName))
                 return false;
+
+            try
+            {
+                // Adds a collection if it doesn't exist
+                this._collections.TryAdd(collectionName, this._db.GetCollection<BsonDocument>(collectionName));
+            }
+            catch (ArgumentNullException err)
+            {
+                logger.Error($"\nThe collection name must be composed of valid characters:\n{err}");
+                throw new ArgumentNullException();
+            }
             return true;
         }
 
