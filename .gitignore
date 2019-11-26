@@ -8,6 +8,7 @@
 Dataset/
 Listings/
 Reviews/
+App.config
 
 # build
 [Dd]ebug/
@@ -15,6 +16,8 @@ Reviews/
 x64/
 [Bb]in/
 [Oo]bj/
+query_output/
+
 
 # Files built by Visual Studio
 *_i.c
