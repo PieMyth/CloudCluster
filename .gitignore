@@ -6,8 +6,10 @@
 *.ruser
 *.log
 Dataset/
-Listings/
-Reviews/
+[Ll]istings/
+[Rr]eviews/
+[Dd]ataset/
+dataset.zip
 *.config
 
 # build
