@@ -50,15 +50,31 @@ namespace mongoCluster
                 // Set the collection name to the first element in the tuple
                 if (!driver.getCollection(src.Item1))
                 {
-                    logger.Info($"Creating collection {src.Item1}");
+                    if (driver.addCollection(src.Item1))
+                    {
+                        logger.Info($"Creating collection: '{src.Item1}'");
+                    } else
+                    {
+                        logger.Error($"Error: Failed to create collection: '{src.Item1}'!");
+                        return false;
+                    }
                 }
                 
-                logger.Info($"Importing documets from '{src.Item2}'...");
+                logger.Info($"Importing documents from '{src.Item2}'...");
 
                 // Import all .json and .csv files from the location specified in the second element of the tuple
                 // The third element of the tuple specifies the max amt of rows to be read at a time before inserting to db
                 var count = importFolder(src.Item2, driver.Collections[src.Item1], src.Item3);
-                logger.Info($"Imported {count.Result.counter} documents from {src.Item2}!");
+                if (count.Result.counter > 0)
+                {
+                    logger.Info($"Imported {count.Result.counter} documents from {src.Item2}!");
+                } else { 
+                    logger.Error($"Error: Failed to import from folder: {src.Item2}!");
+                    Console.WriteLine("Did you configure App.configure to point to your import folders?\n");
+                    Console.WriteLine("Did you remember to unzip the dataset folder?\n");
+                    return false;
+                }
+                
             }
             return true;
         }
@@ -69,7 +85,7 @@ namespace mongoCluster
             // Check that src directory exists
             if (!System.IO.Directory.Exists(src))
             {
-                logger.Error($"Directory doesn't exist. Check if path is correct: {src}");
+                logger.Error($"Error: Directory doesn't exist. Check if path is correct: {src}");
                 throw new DirectoryNotFoundException();
             }
 
@@ -94,7 +110,7 @@ namespace mongoCluster
                         count = await importCSV(file, collection, import_chunk_size);
                         break;
                     default:
-                        logger.Error($"File extension not supported for importing: {file}");
+                        logger.Error($"Error: File extension not supported for importing: {file}");
                         continue;
                 }
 
@@ -110,7 +126,7 @@ namespace mongoCluster
                 }
                 else
                 {
-                    logger.Error($"Failed to import the file: {file}");
+                    logger.Error($"Error: Failed to import the file: {file}");
                 }
             }
             return total_count;

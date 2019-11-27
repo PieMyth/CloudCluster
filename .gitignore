@@ -6,8 +6,11 @@
 *.ruser
 *.log
 Dataset/
-Listings/
-Reviews/
+[Ll]istings/
+[Rr]eviews/
+[Dd]ataset/
+dataset.zip
+*.config
 
 # build
 [Dd]ebug/
@@ -15,6 +18,8 @@ Reviews/
 x64/
 [Bb]in/
 [Oo]bj/
+query_output/
+
 
 # Files built by Visual Studio
 *_i.c
