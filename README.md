@@ -76,6 +76,7 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
     - Ensure that Nlog and Nlog.Config packages have been installed 
     - Check NLog.config for specifying logger printing output and output rules
     - Download NLog.xsd, save as All Files (*.*) with extension .xsd, place in mongoCluster directory
+    - Right click on the NLog.config file from visual studio, select properties, Copy to Output > Copy if Newer
 
 <br>
 <hr/>
