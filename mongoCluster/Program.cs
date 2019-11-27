@@ -17,6 +17,9 @@ namespace mongoCluster
         // Import boolean: true if importing data with C# instead of python script
         private const bool importData = false;
 
+        // True if deleting all collections before exiting script.
+        private const bool deleteAll = false;
+
         // Main: a Driver instance is created, connected, and queries are run 
         static void Main(string[] args)
         { 
@@ -37,8 +40,8 @@ namespace mongoCluster
                     Environment.Exit(1);
                 }
             }
-
-            // Run queries specific to the Listings collection if a successful connection is established
+            
+            // Run queries specific to the listings collection if a successful connection is established
             if (driver.getCollection(_listings))
             {
                 // Run a simple query that counts the total number of listings
@@ -55,43 +58,66 @@ namespace mongoCluster
 
                 // Run a test query
                 if (!driver.queryTest(_listings)) {
-                    logger.Error("Test query failed");
+                    logger.Error("Error: Test query failed");
                 }
 
                 // Query 1: A count query
                 if (!driver.queryCount(_listings)) {
-                    logger.Error("Query1: Count query failed");
+                    logger.Error("Error: Query1: Count query failed");
                 }
 
                 // Query 2: Sorted Subset
-                if (driver.querySortedSubset(_listings)) {
-                    logger.Error("Query2: Sorted subset driver.query failed");
+                if (!driver.querySortedSubset(_listings)) {
+                    logger.Error("Error: Query2: Sorted subset driver.query failed");
                 }
 
 
                 // Query 3: Subset-search
-                if (driver.querySubsetSearch(_listings)) {
-                    logger.Error("Query3: Subset search driver.query failed");
+                if (!driver.querySubsetSearch(_listings)) {
+                    logger.Error("Error: Query3: Subset search driver.query failed");
                 }
 
                 // Query 4: Average
-                if (driver.queryAverage(_listings)) {
-                    logger.Error("Query4: Average driver.query failed");
-                }
-
-                // Query 5: Join
-                if (driver.queryJoin(_listings, _reviews)) {
-                    logger.Error("Query5: Join driver.query failed");
+                if (!driver.queryAverage(_listings)) {
+                    logger.Error("Error: Query4: Average driver.query failed");
                 }
 
                 // Query 6: Update
-                if (driver.queryUpdate(_listings)) {
-                    logger.Error("Query6: Update query failed");
+                if (!driver.queryUpdate(_listings)) {
+                    logger.Error("Error: Query6: Update query failed");
                 }
 
-                // Keep terminal open when program finishes
-                Console.ReadLine();
+
+            } // End queries specific to the listings collection
+
+
+            // Run queries specific to the reviews collection if a successful connection is established
+            if (driver.getCollection(_reviews))
+            {
+                // Query 5: Join
+                if (!driver.queryJoin(_listings, _reviews))
+                {
+                    logger.Error("Error: Query5: Join driver.query failed");
+                }
+
+                // Query ?: Join 2.0
+                
+            } // End queries specific to the reviews collection
+
+
+            if (deleteAll)
+            {
+                foreach (String collection in driver.Collections.Keys)
+                {
+                    if (driver.deleteCollection(collection))
+                        logger.Info($"Successfully dropped collection: '{collection}'");
+                    else
+                        logger.Error($"Error: Failed to drop collection: '{collection}'!");
+                }
             }
+
+            // Keep terminal open when program finishes
+            Console.ReadLine();
         }
 
         /// <summary>create a C# driver for mongoDB that establishes a connection with the mongoDB database</summary>
@@ -111,15 +137,15 @@ namespace mongoCluster
             }
             catch (UnauthorizedAccessException)
             {
-                logger.Error("\nConnection was not established. Please check configuration, credentials and connection details");
+                logger.Error("\nError: Connection was not established. Please check configuration, credentials and connection details");
             }
             catch (NullReferenceException)
             {
-                logger.Error("\nConnection was not established. The database may not exist.");
+                logger.Error("\nError: Connection was not established. The database may not exist.");
             }
             catch (ArgumentException)
             {
-                logger.Error("\nConnection was not established. An invalid name was used for access.");
+                logger.Error("\nError: Connection was not established. An invalid name was used for access.");
             }
             return false;
         }

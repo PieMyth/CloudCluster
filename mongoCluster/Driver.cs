@@ -101,6 +101,13 @@ namespace mongoCluster
             return this._addCollection(collectionName);
         }
 
+        /// <summary>Deletes an existing collection.</summary>
+        /// <returns>True if deleted collection, False, if otherwise</returns>
+        public bool deleteCollection(String collectionName)
+        {
+            return this._deleteCollection(collectionName);
+        }
+
         /// <summary>Appends a path segment to the current working directory</summary>
         /// <param name="pathName">The path segment to append</param>
         /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
@@ -126,7 +133,7 @@ namespace mongoCluster
             }
             catch (System.IO.IOException err)
             {
-                logger.Error($"Failed to create query output directory: {err}");
+                logger.Error($"Error: Failed to create query output directory: {err}");
                 return false;
             }
             return true;
@@ -288,7 +295,7 @@ namespace mongoCluster
             }
             catch (MongoConfigurationException err)
             {
-                logger.Error($"Configuration error: {err}");
+                logger.Error($"Error: Configuration error: {err}");
                 throw new UnauthorizedAccessException();
             }
             return true;
@@ -338,7 +345,7 @@ namespace mongoCluster
             }
             catch (ArgumentNullException err)
             {
-                logger.Error($"\nThe collection name must be composed of valid characters:\n{err}");
+                logger.Error($"\nError: The collection name must be composed of valid characters:\n{err}");
                 throw new ArgumentNullException();
             }
             return true;
@@ -358,9 +365,35 @@ namespace mongoCluster
             }
             catch (ArgumentNullException err)
             {
-                logger.Error($"\nThe collection name must be composed of valid characters:\n{err}");
+                logger.Error($"\nError: The collection name must be composed of valid characters:\n{err}");
                 throw new ArgumentNullException();
             }
+            return true;
+        }
+
+        /// <summary>Deletes an existing collection.</summary>
+        /// <returns>True if successfully deleted, False, if otherwise</returns>
+        private bool _deleteCollection(String collectionName)
+        {
+            if (!this._collectionExists(collectionName))
+                return false;
+
+            try
+            {
+                // Removes collection from local dict & from db
+                if (!this._collections.Remove(collectionName))
+                    return false;
+                this._db.DropCollection(collectionName);
+            }
+            catch (ArgumentNullException err)
+            {
+                logger.Error($"\nError: The collection name must be composed of valid characters:\n{err}");
+                throw new ArgumentNullException();
+            }
+            
+            // Check that the collection doesn't exist anymore
+            if (this._collectionExists(collectionName))
+                return false;
             return true;
         }
 
