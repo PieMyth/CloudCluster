@@ -117,6 +117,7 @@ namespace mongoCluster
             }
 
             // Keep terminal open when program finishes
+            Console.WriteLine("Program ended");
             Console.ReadLine();
         }
 
