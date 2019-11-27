@@ -10,6 +10,7 @@ client = pymongo.MongoClient("mongodb+srv://user:userpassword@cluster0-lgn2s.gcp
 
 # These will create if the db and/or the collections don't exist
 db = client['airbnb']
+root = "C:/<change to your local path>"
 listings_collection = db['listings'] # change this to use the <collection_name>
 reviews_collection = db['reviews'] # change this to use the <collection_name>
 file_index_listings = [78, 80, 81, 84, 86, 87, 88, 89]
@@ -17,7 +18,7 @@ file_index_reviews = [91]
 
 # Loop through listings files
 for iteration in file_index_listings:
-    file_name = str(iteration)+"listings.json"
+    file_name = root + str(iteration)+"listings.json"
     df = pd.read_json(file_name)
     dict = []
     count=0
@@ -35,7 +36,7 @@ for iteration in file_index_listings:
 
 # Loop through reviews files
 for iteration in file_index_reviews:
-    file_name = str(iteration)+"reviews.json"
+    file_name = root + str(iteration)+"reviews.json"
     df = pd.read_json(file_name)
     dict = []
     count=0
