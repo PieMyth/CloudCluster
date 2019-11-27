@@ -57,6 +57,7 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
 4. Change the connection string in App.config to point to your cluster's connection string
 
 5. If importing .csv or .json files from a folder:
+    - Unzip the 'dataset.zip' file from the project root directory
     - Edit the listingsFolder and reviewsFolder in App.config to point to the import folder locations
     - Be sure to untar or unzip files so that they are in either .csv or .json!
     - Set the 'importData' boolean in Program.cs to true
