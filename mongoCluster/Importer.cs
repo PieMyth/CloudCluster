@@ -65,7 +65,16 @@ namespace mongoCluster
                 // Import all .json and .csv files from the location specified in the second element of the tuple
                 // The third element of the tuple specifies the max amt of rows to be read at a time before inserting to db
                 var count = importFolder(src.Item2, driver.Collections[src.Item1], src.Item3);
-                logger.Info($"Imported {count.Result.counter} documents from {src.Item2}!");
+                if (count.Result.counter > 0)
+                {
+                    logger.Info($"Imported {count.Result.counter} documents from {src.Item2}!");
+                } else { 
+                    logger.Error($"Error: Failed to import from folder: {src.Item2}!");
+                    Console.WriteLine("Did you configure App.configure to point to your import folders?\n");
+                    Console.WriteLine("Did you remember to unzip the dataset folder?\n");
+                    return false;
+                }
+                
             }
             return true;
         }
