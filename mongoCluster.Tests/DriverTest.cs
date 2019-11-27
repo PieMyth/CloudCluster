@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 using Xunit;
 
 namespace mongoCluster.Tests
@@ -9,11 +10,21 @@ namespace mongoCluster.Tests
         private const string _reviews = "reviews";
 
         [Fact]
+        public void configurationFileExists()
+        {
+            // The following line returns the location of the .config file this test script reads from
+            // string configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
+            
+            string value = ConfigurationManager.AppSettings["TestValue"];
+            Xunit.Assert.False(string.IsNullOrEmpty(value), "No App.Config found.");
+        }
+
+        [Fact]
         public void establishConnectionTest_connectionSuccessfullyEstablished()
         {
 
             Driver driver = new Driver();
-            Assert.True(driver.establishConnection());
+            Xunit.Assert.True(driver.establishConnection());
         }
 
         [Fact]
@@ -22,7 +33,7 @@ namespace mongoCluster.Tests
 
             Driver driver = new Driver();
             driver.establishConnection();
-            Assert.True(driver.getDatabase());
+            Xunit.Assert.True(driver.getDatabase());
         }
 
         [Theory]
@@ -33,7 +44,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Assert.True(driver.collectionExists(validCollection));
+            Xunit.Assert.True(driver.collectionExists(validCollection));
         }
 
         [Theory]
@@ -44,7 +55,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Assert.True(driver.getCollection(validCollection));
+            Xunit.Assert.True(driver.getCollection(validCollection));
         }
 
         [Theory]
@@ -55,7 +66,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Assert.False(driver.collectionExists(invalidCollection));
+            Xunit.Assert.False(driver.collectionExists(invalidCollection));
         }
 
         [Theory]
@@ -65,7 +76,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Assert.Throws<ArgumentNullException>(() => driver.collectionExists(nullValue));
+            Xunit.Assert.Throws<ArgumentNullException>(() => driver.collectionExists(nullValue));
         }
 
         [Theory]
@@ -76,7 +87,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Assert.False(driver.getCollection(invalidCollection));
+            Xunit.Assert.False(driver.getCollection(invalidCollection));
         }
 
         [Theory]
@@ -86,7 +97,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Assert.Throws<ArgumentNullException>(() => driver.getCollection(nullValue));
+            Xunit.Assert.Throws<ArgumentNullException>(() => driver.getCollection(nullValue));
         }
 
         [Fact]
@@ -96,7 +107,7 @@ namespace mongoCluster.Tests
             driver.establishConnection();
             driver.getDatabase();
             driver.getCollection(_listings);
-            Assert.True(driver.queryCountDocuments(_listings) > 50000);
+            Xunit.Assert.True(driver.queryCountDocuments(_listings) > 5000);
         }
 
     }

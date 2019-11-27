@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\mongoCluster\App.config" Link="App.config" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <PackageReference Include="coverlet.collector" Version="1.0.1" />
@@ -17,4 +22,15 @@
     <ProjectReference Include="..\mongoCluster\mongoCluster.csproj" />
   </ItemGroup>
 
+  <!-- https://stackoverflow.com/questions/47752271/app-config-not-beeing-loaded-in-net-core-mstests-project 
+  When VS builds the project, it copies App.config into the bin folder and renames the file to 
+  the clustername.dll.config. However, for unit tests, VS copies and renames the file, but instead looks for
+  'testhost.dll.config' as the file, which doesn't exist unless you either copy & rename the App.config
+  file, or use the following target snippet: -->
+  <Target Name="CopyAppConfig" AfterTargets="Build" DependsOnTargets="Build">
+    <CreateItem Include="$(OutputPath)$(AssemblyName).dll.config">
+      <Output TaskParameter="Include" ItemName="FilesToCopy"/>
+    </CreateItem>
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFiles="$(OutputPath)testhost.dll.config" />
+  </Target>
 </Project>
