@@ -55,7 +55,7 @@ namespace mongoCluster
                         logger.Info($"Creating collection: '{src.Item1}'");
                     } else
                     {
-                        logger.Error($"Failed to create collection: '{src.Item1}'!");
+                        logger.Error($"Error: Failed to create collection: '{src.Item1}'!");
                         return false;
                     }
                 }
@@ -76,7 +76,7 @@ namespace mongoCluster
             // Check that src directory exists
             if (!System.IO.Directory.Exists(src))
             {
-                logger.Error($"Directory doesn't exist. Check if path is correct: {src}");
+                logger.Error($"Error: Directory doesn't exist. Check if path is correct: {src}");
                 throw new DirectoryNotFoundException();
             }
 
@@ -101,7 +101,7 @@ namespace mongoCluster
                         count = await importCSV(file, collection, import_chunk_size);
                         break;
                     default:
-                        logger.Error($"File extension not supported for importing: {file}");
+                        logger.Error($"Error: File extension not supported for importing: {file}");
                         continue;
                 }
 
@@ -117,7 +117,7 @@ namespace mongoCluster
                 }
                 else
                 {
-                    logger.Error($"Failed to import the file: {file}");
+                    logger.Error($"Error: Failed to import the file: {file}");
                 }
             }
             return total_count;
