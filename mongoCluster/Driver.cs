@@ -132,6 +132,21 @@ namespace mongoCluster
             return true;
         }
 
+        /// <summary>Creates the directories and file for storing query output to an external file.</summary>
+        /// <returns>True if created file, False, otherwise</returns>
+        private bool _prepareQueryOutput(string functionName, ref System.IO.FileInfo file)
+        {
+            // Create the absolute path to the output .txt file for this query
+            String fileName = functionName + ".txt";
+            String filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
+            file = new System.IO.FileInfo(_getOutputPath(filePath));
+
+            // Create the directories for the output path if they do not already exist
+            if (!_createFile(ref file))
+                return false;
+            return true;
+        }
+
         /// <summary>A Query that counts the total number of documents in a collection</summary>
         /// <param name="collectionName">The string collection to query</param>
         /// <returns>A total count of documents of long type</returns>
@@ -176,15 +191,11 @@ namespace mongoCluster
         /// <returns>True if successful, False otherwise</returns>
         public bool queryCount(String collectionName)
         {
-            // Create the absolute path to the output .txt file for this query
-            String fileName = MethodBase.GetCurrentMethod().Name + ".txt";
-            String filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
-            System.IO.FileInfo file = new System.IO.FileInfo(_getOutputPath(filePath));
-
-            // Create the directories for the output path if they do not already exist
-            if (!_createFile(ref file))
+            // Prepare the external file to store this query's output
+            System.IO.FileInfo file = null;
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
                 return false;
-            
+
             // Open external file for storing query output, clears out previous text
             using (System.IO.StreamWriter fout =
                 new System.IO.StreamWriter(file.FullName))
@@ -213,8 +224,6 @@ namespace mongoCluster
                 output += $"\nQuery run time: {DateTime.UtcNow - start}";
                 logger.Info(output);
                 fout.WriteLine(output);
-
-
             }
             return true;
         }
@@ -465,6 +474,28 @@ namespace mongoCluster
             */
             // TODO: stub
 
+            // Prepare the external file to store this query's output
+            System.IO.FileInfo file = null;
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file for storing query output, clears out previous text
+            using (System.IO.StreamWriter fout =
+                new System.IO.StreamWriter(file.FullName))
+            {
+                String output;
+                DateTime start;
+
+                Console.WriteLine('\n' + new string('-', 100) + '\n');
+                output = "Query 2 - Sorted Subset";
+                fout.WriteLine(output);
+
+                start = DateTime.UtcNow;
+                // Run query on this line
+                output += $"\nQuery run time: {DateTime.UtcNow - start}";
+                logger.Info(output);
+                fout.WriteLine(output);
+            }
             return false;
         }
 
@@ -486,6 +517,29 @@ namespace mongoCluster
             *         This can then be formatted to get this count divided by the total number of documents to gather a percentage
             */
             // TODO: stub
+
+            // Prepare the external file to store this query's output
+            System.IO.FileInfo file = null;
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file for storing query output, clears out previous text
+            using (System.IO.StreamWriter fout =
+                new System.IO.StreamWriter(file.FullName))
+            {
+                String output;
+                DateTime start;
+
+                Console.WriteLine('\n' + new string('-', 100) + '\n');
+                output = "Query 3 - Subset-search";
+                fout.WriteLine(output);
+
+                start = DateTime.UtcNow;
+                // Run query on this line
+                output += $"\nQuery run time: {DateTime.UtcNow - start}";
+                logger.Info(output);
+                fout.WriteLine(output);
+            }
             return false;
         }
 
@@ -501,6 +555,29 @@ namespace mongoCluster
             *      2. Perform an average aggregation for the average host_response_rate
             */
             // TODO: stub
+
+            // Prepare the external file to store this query's output
+            System.IO.FileInfo file = null;
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file for storing query output, clears out previous text
+            using (System.IO.StreamWriter fout =
+                new System.IO.StreamWriter(file.FullName))
+            {
+                String output;
+                DateTime start;
+
+                Console.WriteLine('\n' + new string('-', 100) + '\n');
+                output = "Query 4 - Average";
+                fout.WriteLine(output);
+
+                start = DateTime.UtcNow;
+                // Run query on this line
+                output += $"\nQuery run time: {DateTime.UtcNow - start}";
+                logger.Info(output);
+                fout.WriteLine(output);
+            }
             return false;
         }
 
@@ -518,6 +595,29 @@ namespace mongoCluster
             *      3. For each host id, return the max date from the reviews ($max). (This possibly can be completed before the lookup for efficiency)
             */
             // TODO: stub
+
+            // Prepare the external file to store this query's output
+            System.IO.FileInfo file = null;
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file for storing query output, clears out previous text
+            using (System.IO.StreamWriter fout =
+                new System.IO.StreamWriter(file.FullName))
+            {
+                String output;
+                DateTime start;
+
+                Console.WriteLine('\n' + new string('-', 100) + '\n');
+                output = "Query 5 - Join";
+                fout.WriteLine(output);
+
+                start = DateTime.UtcNow;
+                // Run query on this line
+                output += $"\nQuery run time: {DateTime.UtcNow - start}";
+                logger.Info(output);
+                fout.WriteLine(output);
+            }
             return false;
         }
 
@@ -527,12 +627,35 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
         private bool _queryUpdate(String collectionName)
-        { 
+        {
             /*  Implementation Strategy:
             *      1. Perform an updateMany on all listings from Portland 
             *         with greater than 2 bedrooms and 2 bathrooms to set the require_guest_phone_verification field as true. 
             */
             // TODO: stub
+
+            // Prepare the external file to store this query's output
+            System.IO.FileInfo file = null;
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file for storing query output, clears out previous text
+            using (System.IO.StreamWriter fout =
+                new System.IO.StreamWriter(file.FullName))
+            {
+                String output;
+                DateTime start;
+
+                Console.WriteLine('\n' + new string('-', 100) + '\n');
+                output = "Query 6 - Update";
+                fout.WriteLine(output);
+
+                start = DateTime.UtcNow;
+                // Run query on this line
+                output += $"\nQuery run time: {DateTime.UtcNow - start}";
+                logger.Info(output);
+                fout.WriteLine(output);
+            }
             return false;
         }
     }
