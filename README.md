@@ -45,8 +45,38 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
       - ***NLog.Config***
     - If importing cluster data with C#
       - ***CsvHelper***
-4. If importing .csv or .json files from a folder, edit the sources variable to point to the import folder location
-    - Note: Do not have the imported file open in any other programs, or VS can't get a lock on the file
+    - Package for getting current function name
+      - ***Microsoft.IdentityModel.Protocols***
+    - Config file package
+      - ***System.Configuration.ConfigurationManager***
+    - Validation Packages
+      - ***MSTest.TestFramework***
+      - ***xunit***
+      - ***xunit.runner.visualstudio***
+
+4. Change the connection string in App.config to point to your cluster's connection string
+
+5. If importing .csv or .json files from a folder:
+    - Edit the listingsFolder and reviewsFolder in App.config to point to the import folder locations
+    - Be sure to untar or unzip files so that they are in either .csv or .json!
+    - Set the 'importData' boolean in Program.cs to true
+    - Note: Do not have the imported file open in any other programs while running, or VS can't get a lock on the file
+
+6. If deleting all collections:
+    - Set the 'deleteAll' boolean in Program.cs to true
+
+7. If having trouble running tests, check that the App.config file is properly linked to the test directory
+    - In the Solution Explorere panel, right-click on 'mongoCluster.Tests'
+    - Add > Existing Item...
+    - File type: All Files (*.*)
+    - Navigate to the mongoCluster folder and select 'App.config'
+    - Press the down arrow next to 'Add', select 'Add as Link'
+
+8. If having trouble seeing input from the console:
+    - Ensure that Nlog and Nlog.Config packages have been installed 
+    - Check NLog.config for specifying logger printing output and output rules
+    - Download NLog.xsd, save as All Files (*.*) with extension .xsd, place in mongoCluster directory
+
 <br>
 <hr/>
 
@@ -126,16 +156,19 @@ From the first link, 'MongoDB on Compute Engine'...
 <hr/>
 
 ## TODOs
-- Try and catch blocks for queries and db connection attempts
-- Set up tests for TDD?
 - Set up Atlas clusters on AWS, GCP, and Azure
 - Use cursors to parse through large query results
 - Set up indexes after importing data
 - Add our report .pdfs onto github
 - Add our presentation onto github
 - Implement at least 4 queries
-- Utilize .explain() to get query result metadata
 - Add code for reporting query performance (ex. python's pychart library)
+
++ [PASS]    Try and catch blocks for queries and db connection attempts
++ [PASS]    Set up tests for TDD?
++ [FAILED]  Utilize .explain() to get query result metadata
+    - Reason: [.explain() functionality was removed from the C# driver because it is not complete](https://stackoverflow.com/questions/49506857/how-do-i-run-an-explain-query-with-the-2-4-c-sharp-mongo-driver)
+    - Workaround: use C#'s Datetime.Now() for query runtime & take an average of performance
 <br>
 <hr/>
 
