@@ -45,6 +45,7 @@ namespace mongoCluster
             if (driver.getCollection(_listings))
             {
                 // Run a simple query that counts the total number of listings
+                /*
                 long totalListings = driver.queryCountDocuments(_listings);
                 if (totalListings.Equals(0))
                 {
@@ -86,6 +87,7 @@ namespace mongoCluster
                 if (!driver.queryUpdate(_listings)) {
                     logger.Error("Error: Query6: Update query failed");
                 }
+                */
 
 
             } // End queries specific to the listings collection
