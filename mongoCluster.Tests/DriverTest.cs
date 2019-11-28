@@ -1,5 +1,6 @@
 using System;
 using System.Configuration;
+using MongoDB.Driver;
 using Xunit;
 
 namespace mongoCluster.Tests
@@ -10,7 +11,7 @@ namespace mongoCluster.Tests
         private const string _reviews = "reviews";
 
         [Fact]
-        public void configurationFileExists()
+        public void configurationFileExists_FileDoesNotExist()
         {
             // The following line returns the location of the .config file this test script reads from
             // string configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
@@ -61,12 +62,12 @@ namespace mongoCluster.Tests
         [Theory]
         [InlineData("invalidName")]
         [InlineData("")]
-        public void collectionExistsTest_invalidValueReturnsFalse(String invalidCollection)
+        public void collectionExistsTest_invalidValueThrowsException(String invalidCollection)
         {
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Xunit.Assert.False(driver.collectionExists(invalidCollection));
+            Xunit.Assert.Throws<MongoAuthenticationException>(() => driver.collectionExists(invalidCollection));
         }
 
         [Theory]
