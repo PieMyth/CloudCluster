@@ -27,6 +27,7 @@ namespace mongoCluster
         public string Connection 
         {
             get { return this._connection; }
+            set { this._connection = value; }
         }
 
         // database name
@@ -328,6 +329,10 @@ namespace mongoCluster
             // modified from https://stackoverflow.com/questions/25017219/how-to-check-if-collection-exists-in-mongodb-using-c-sharp-driver
             BsonDocument filter = new BsonDocument("name", collectionName);
             var collections = new ListCollectionNamesOptions { Filter = filter };
+
+            var result = _db.ListCollectionNames(collections).Any();
+            Console.WriteLine($"collection name results = {result}");
+
             return _db.ListCollectionNames(collections).Any();
         }
 
