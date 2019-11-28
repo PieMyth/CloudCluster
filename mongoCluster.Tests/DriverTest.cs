@@ -1,6 +1,5 @@
 using System;
 using System.Configuration;
-using MongoDB.Driver;
 using Xunit;
 
 namespace mongoCluster.Tests
@@ -17,7 +16,16 @@ namespace mongoCluster.Tests
             // string configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None).FilePath;
             
             string value = ConfigurationManager.AppSettings["TestValue"];
-            Xunit.Assert.False(string.IsNullOrEmpty(value), "No App.Config found.");
+            Assert.False(string.IsNullOrEmpty(value), "No App.Config found.");
+        }
+
+        [Theory]
+        [InlineData("invalidConnection")]
+        public void establishConnectionTest_connectionFailsAndThrows(string invalidConnection)
+        {
+            Driver driver = new Driver();
+            driver.Connection = invalidConnection;
+            Assert.Throws<UnauthorizedAccessException>(() => driver.establishConnection());
         }
 
         [Fact]
@@ -25,7 +33,7 @@ namespace mongoCluster.Tests
         {
 
             Driver driver = new Driver();
-            Xunit.Assert.True(driver.establishConnection());
+            Assert.True(driver.establishConnection());
         }
 
         [Fact]
@@ -34,7 +42,7 @@ namespace mongoCluster.Tests
 
             Driver driver = new Driver();
             driver.establishConnection();
-            Xunit.Assert.True(driver.getDatabase());
+            Assert.True(driver.getDatabase());
         }
 
         [Theory]
@@ -45,7 +53,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Xunit.Assert.True(driver.collectionExists(validCollection));
+            Assert.True(driver.collectionExists(validCollection));
         }
 
         [Theory]
@@ -56,18 +64,18 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Xunit.Assert.True(driver.getCollection(validCollection));
+            Assert.True(driver.getCollection(validCollection));
         }
 
         [Theory]
         [InlineData("invalidName")]
         [InlineData("")]
-        public void collectionExistsTest_invalidValueThrowsException(String invalidCollection)
+        public void collectionExistsTest_invalidValueReturnsFalse(String invalidCollection)
         {
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Xunit.Assert.Throws<MongoAuthenticationException>(() => driver.collectionExists(invalidCollection));
+            Assert.False(driver.collectionExists(invalidCollection));
         }
 
         [Theory]
@@ -77,7 +85,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Xunit.Assert.Throws<ArgumentNullException>(() => driver.collectionExists(nullValue));
+            Assert.Throws<ArgumentNullException>(() => driver.collectionExists(nullValue));
         }
 
         [Theory]
@@ -88,7 +96,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Xunit.Assert.False(driver.getCollection(invalidCollection));
+            Assert.False(driver.getCollection(invalidCollection));
         }
 
         [Theory]
@@ -98,7 +106,7 @@ namespace mongoCluster.Tests
             Driver driver = new Driver();
             driver.establishConnection();
             driver.getDatabase();
-            Xunit.Assert.Throws<ArgumentNullException>(() => driver.getCollection(nullValue));
+            Assert.Throws<ArgumentNullException>(() => driver.getCollection(nullValue));
         }
 
         [Fact]
@@ -108,7 +116,7 @@ namespace mongoCluster.Tests
             driver.establishConnection();
             driver.getDatabase();
             driver.getCollection(_listings);
-            Xunit.Assert.True(driver.queryCountDocuments(_listings) > 5000);
+            Assert.True(driver.queryCountDocuments(_listings) > 5000);
         }
 
     }
