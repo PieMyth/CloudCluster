@@ -1,11 +1,9 @@
-using System.Configuration;
-using System.Collections.Specialized;
-
 using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.Configuration;
 
 using MongoDB.Driver;
 using MongoDB.Bson;
@@ -21,14 +19,16 @@ namespace mongoCluster
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         // Output folder for query results
-        private const String _outputFolder = @"query_output";
+        private const string _outputFolder = @"query_output";
 
         // Atlas cluster connection string
-        private String _connection = ConfigurationManager.AppSettings.Get("connectionStrings");
-        /*List<String> connections = ConfigurationManager.AppSettings.Get("connectionStrings")
-                                                                       .Split(',')
-                                                                       .Select(s => s.Trim())
-                                                                       .ToArray().ToList<String>(); */
+        private string _connection;
+
+        public string Connection 
+        {
+            get { return this._connection; }
+            set { this._connection = value; }
+        }
 
         // database name
         private const String _dbName = "airbnb";
@@ -61,9 +61,10 @@ namespace mongoCluster
         /// <summary>Default constructor</summary>
         public Driver()
         {
-            _client = null;
-            _db = null;
-            _collections = new Dictionary<string, IMongoCollection<BsonDocument>>();
+            this._client = null;
+            this._db = null;
+            this._connection = ConfigurationManager.AppSettings.Get("connectionStrings");
+            this._collections = new Dictionary<string, IMongoCollection<BsonDocument>>();
         }
 
         /// <summary>Establishes connection to database</summary>
@@ -291,7 +292,7 @@ namespace mongoCluster
         {
             try
             {
-                this._client = new MongoClient(_connection);
+                this._client = new MongoClient(this._connection);
             }
             catch (MongoConfigurationException err)
             {
@@ -328,6 +329,10 @@ namespace mongoCluster
             // modified from https://stackoverflow.com/questions/25017219/how-to-check-if-collection-exists-in-mongodb-using-c-sharp-driver
             BsonDocument filter = new BsonDocument("name", collectionName);
             var collections = new ListCollectionNamesOptions { Filter = filter };
+
+            var result = _db.ListCollectionNames(collections).Any();
+            Console.WriteLine($"collection name results = {result}");
+
             return _db.ListCollectionNames(collections).Any();
         }
 
