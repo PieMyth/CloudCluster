@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -331,7 +331,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                this._queryJoin(firstCollection, secondCollection, fout);
+                this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -526,7 +526,7 @@ namespace mongoCluster
                                            int zipcode_start_limit = -1, int zipcode_end_limit = -1, string city_limit = "")
         {
             /*  Implementation Strategy:
-            *      1. Perform a filter where the city is equal to ìPortlandî ($eq) 
+            *      1. Perform a filter where the city is equal to ‚ÄúPortland‚Äù ($eq) 
             *      2. Perform a secondary filter where the number of bedrooms is greater than 2 ($gt)
             */
             FilterDefinition<BsonDocument> filter;
@@ -596,9 +596,9 @@ namespace mongoCluster
         private bool _querySubsetSearch(string collectionName, StreamWriter fout)
         {
             /*  Implementation Strategy:
-            *      1. Perform a filter on the data to only grab documents where property_type is equal to ìHouseî.
+            *      1. Perform a filter on the data to only grab documents where property_type is equal to ‚ÄúHouse‚Äù.
             *      2. Perform another filter where the calendar_updated is less than one week. 
-            *         This will require more effort for string comparison when needing to consider values such as ìtodayî, ì6 days agoî, ìone week agoî. 
+            *         This will require more effort for string comparison when needing to consider values such as ‚Äútoday‚Äù, ‚Äú6 days ago‚Äù, ‚Äúone week ago‚Äù. 
             *      3. Capture the number of documents in this resulting set.
             *      4. Perform a grouping on the filtered set to group on the cancellation_policy and count using $group and $sum. 
             *         This can then be formatted to get this count divided by the total number of documents to gather a percentage
@@ -646,15 +646,41 @@ namespace mongoCluster
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _queryJoin(string firstCollection, string secondCollection, StreamWriter fout)
+        private bool _queryJoin(IMongoCollection<BsonDocument> firstCollection, IMongoCollection<BsonDocument> secondCollection, StreamWriter fout)
         {
+
             /*  Implementation Strategy:
-            *      1. Perform a filter on the data to find all listings with city equal to ìPortlandî and greater than 3 bedrooms. 
-            *      2. Perform a lookup between the listings and reviews tables with id and listing_id as the lookup criteria.
-            *      3. For each host id, return the max date from the reviews ($max). (This possibly can be completed before the lookup for efficiency)
-            */
-            // TODO: stub
-            return false;
+           *      1. Perform a filter on the data to find all House listings with city equal to ¬ìPortland¬î and greater than 3 bedrooms. 
+           *      2. Perform a lookup between the listings and reviews tables with id and listing_id as the lookup criteria.
+           *      3. For each host id, return the max date from the reviews ($max). (This possibly can be completed before the lookup for efficiency)
+           */
+
+
+            // Prepare the external file to store this query's output
+            System.IO.FileInfo file = null;
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file for storing query output, clears out previous text
+
+            String output;
+            DateTime start;
+
+            Console.WriteLine('\n' + new string('-', 100) + '\n');
+            output = "Query 5 - Join";
+            start = DateTime.UtcNow;
+            var aggregate = firstCollection.Aggregate().Match(new BsonDocument("city","Portland")).Match(new BsonDocument("bedrooms",new BsonDocument("$gt",3)))
+                .Match(new BsonDocument("property_type","House"))
+                .Lookup("reviews", "id", "listing_id", "result").Unwind(x => x["result"]).
+                Group(BsonDocument.Parse("{'_id': '$id', 'host_name': {$first: '$host_name'}, 'result': {$first: '$result'}}"))
+                .ToList();
+            output += $"\nQuery run time: {DateTime.UtcNow - start}";
+            var resultsCount = aggregate.Count;
+            output += $"\nNumber of listings with their most recent review = {resultsCount} \n";
+            logger.Info(output);
+            fout.WriteLine(output);
+
+            return true;
         }
 
         /// <summary> Records the starting metrics of a query
