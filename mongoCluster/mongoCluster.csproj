@@ -22,4 +22,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="query_output\" />
+  </ItemGroup>
+
 </Project>
