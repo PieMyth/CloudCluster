@@ -109,52 +109,6 @@ namespace mongoCluster
             return this._deleteCollection(collectionName);
         }
 
-        /// <summary>Appends a path segment to the current working directory</summary>
-        /// <param name="pathName">The path segment to append</param>
-        /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
-        private String _getOutputPath(String pathName)
-        {  
-            // The project root folder, "mongoCluster", is  ~/bin/Debug/netcoreapp3.0/<assemblyExecutable.exe
-            return Path.Combine(
-                    Path.Combine(
-                        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                        "../../..")
-                   , @pathName);
-        }
-
-        /// <summary>Creates the path to a file if it does not already exist</summary>
-        /// <param name="filePath">Path to the file to create</param>
-        /// <returns>True if path exists or was created successfully, False, otherwise</returns>
-        private bool _createFile(ref FileInfo filePath)
-        {
-            try
-            {
-                // Does nothing if file already exists
-                filePath.Directory.Create();
-            }
-            catch (IOException err)
-            {
-                logger.Error($"Error: Failed to create query output directory: {err}");
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>Creates the directories and file for storing query output to an external file.</summary>
-        /// <param name="file">A reference to the file path to create</param>
-        /// <param name="functionName">The function name to store</param>
-        /// <returns>True if created file, False, otherwise</returns>
-        private bool _prepareQueryOutput(string functionName, ref FileInfo file)
-        {
-            // Create the absolute path to the output .txt file for this query
-            String fileName = functionName + ".txt";
-            String filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
-            file = new FileInfo(_getOutputPath(filePath));
-
-            // Create the directories for the output path if they do not already exist
-            return this._createFile(ref file);
-        }
-
         /// <summary>A Query that counts the total number of documents in a collection</summary>
         /// <param name="collectionName">The string collection to query</param>
         /// <returns>A total count of documents of long type</returns>
@@ -258,7 +212,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._querySortedSubset(collectionName, fout)) {
+                if (!this._querySortedSubset(this._collections[collectionName], fout)) {
                     this._stopQueryMetrics(fout, start);
                     return false;
                 }
@@ -351,38 +305,6 @@ namespace mongoCluster
 
                 // Run the query
                 if (!this._queryUpdate(collectionName, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
-                this._stopQueryMetrics(fout, start);
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Query 6: Join
-        /// Return the most recent review for all listings from Portland with greater than 3 bedrooms that is also a house.
-        /// </summary>
-        /// <param name="firstCollection">String representing one collection</param>
-        /// <param name="secondCollection">String representing a second collection</param>
-        public bool queryJoin(String firstCollection, String secondCollection)
-        { 
-            string queryName = "Query 6 - Join";
-            FileInfo file = null;
-            DateTime start;
-
-            // Prepare the external file to store this query's output
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
-                return false;
-
-            // Open external file (clearing previous content if necessary)
-            // Record start/end time metrics, query results to file
-            using (StreamWriter fout = new StreamWriter(file.FullName))
-            {
-                start = this._startQueryMetrics(queryName, fout);
-
-                // Run the query
-                if (!this._queryJoin(firstCollection, secondCollection, fout)) {
                     this._stopQueryMetrics(fout, start);
                     return false;
                 }
@@ -614,16 +536,17 @@ namespace mongoCluster
         /// Query 2: Sorted Subset
         /// Find the listings with the top 5 highest number of reviews for the entire dataset.
         /// </summary>
-        /// <param name="collectionName">String representing the collection</param>
+        /// <param name="collection">The collection containing the reviews</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _querySortedSubset(String collectionName, StreamWriter fout)
+        private bool _querySortedSubset(IMongoCollection<BsonDocument> collection, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a sort ($sort) on the number_of_reviews decreasing (-1).
             *      2. Project a limited number of columns to add additional complexity.
             *      3. Limit to the top 5 results ($limit).
             */
-            // TODO: stub
+            // TODO: Michelle
+
             return false;
         }
 
@@ -717,6 +640,52 @@ namespace mongoCluster
             string output = $"\nQuery run time: {stop - start}";
             logger.Info(output);
             fout.WriteLine(output);
+        }
+
+        /// <summary>Appends a path segment to the current working directory</summary>
+        /// <param name="pathName">The path segment to append</param>
+        /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
+        private String _getOutputPath(String pathName)
+        {  
+            // The project root folder, "mongoCluster", is  ~/bin/Debug/netcoreapp3.0/<assemblyExecutable.exe
+            return Path.Combine(
+                    Path.Combine(
+                        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                        "../../..")
+                   , @pathName);
+        }
+
+        /// <summary>Creates the path to a file if it does not already exist</summary>
+        /// <param name="filePath">Path to the file to create</param>
+        /// <returns>True if path exists or was created successfully, False, otherwise</returns>
+        private bool _createFile(ref FileInfo filePath)
+        {
+            try
+            {
+                // Does nothing if file already exists
+                filePath.Directory.Create();
+            }
+            catch (IOException err)
+            {
+                logger.Error($"Error: Failed to create query output directory: {err}");
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>Creates the directories and file for storing query output to an external file.</summary>
+        /// <param name="file">A reference to the file path to create</param>
+        /// <param name="functionName">The function name to store</param>
+        /// <returns>True if created file, False, otherwise</returns>
+        private bool _prepareQueryOutput(string functionName, ref FileInfo file)
+        {
+            // Create the absolute path to the output .txt file for this query
+            String fileName = functionName + ".txt";
+            String filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
+            file = new FileInfo(_getOutputPath(filePath));
+
+            // Create the directories for the output path if they do not already exist
+            return this._createFile(ref file);
         }
     }
 }
