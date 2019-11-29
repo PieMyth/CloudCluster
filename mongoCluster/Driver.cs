@@ -217,18 +217,9 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                // Task<bool> queryResult = this._querySortedSubset(this._collections[collectionName], fout);
                 bool queryResult = this._querySortedSubset(this._collections[collectionName], fout);
                 result = $"Result {queryResult}";
                 result += $"\nQuery run time: {DateTime.UtcNow - start}";
-
-                // TODO:
-                /*
-                if (!result) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
-                */
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -256,10 +247,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._querySubsetSearch(collectionName, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                this._querySubsetSearch(collectionName, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -286,10 +274,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._queryAverage(collectionName, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                this._queryAverage(collectionName, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -317,10 +302,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._queryUpdate(collectionName, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                this._queryUpdate(collectionName, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -349,11 +331,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._queryJoin(firstCollection, secondCollection, fout))
-                {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                this._queryJoin(firstCollection, secondCollection, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
