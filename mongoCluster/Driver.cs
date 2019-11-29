@@ -571,18 +571,31 @@ namespace mongoCluster
             *      3. Limit to the top 5 results ($limit).
             */
 
+            int count = 0;
+
             // Create index on review numbers
-            fout.WriteLine("Creating new index on number_of_reviews, descending");
-            logger.Info($"Creating new index on number_of_reviews, descending");
+            string opDescription = "Creating new index on number_of_reviews, descending";
+            fout.WriteLine(opDescription);
+            logger.Info(opDescription);
             string indexToCreate = "number_of_reviews";
             _ = this._createIndexDescending(collection, indexToCreate);
 
             // TODO: Michelle wip: filter the top 5 results using the newly created index
-            var builders = Builders<BsonDocument>.Filter;
-            var filter = builders.Gt(indexToCreate, 0);
-            var list = collection.Find(filter).Limit(5);
-            fout.WriteLine($"QUERY: {list}");
-            logger.Info($"QUERY: \n{list}");
+            var builder = Builders<BsonDocument>.Filter;
+            FilterDefinition<BsonDocument> filter = builder.Gte(indexToCreate, 00);
+
+            string resultDescription = "Top five listings with sorted number of reviews:";
+            fout.WriteLine(resultDescription);
+            logger.Info(resultDescription);
+            var results = collection.Find(filter)
+                                    .Limit(5)
+                                    .ForEachAsync(doc =>
+                                    {
+                                        var res = doc.ToDictionary();
+                                        Console.WriteLine($" Query result: \nID: {res["id"]}, number of reviews: {res[indexToCreate]}");
+                                        logger.Info($" Query result: \nID: {res["id"]}, number of reviews: {res[indexToCreate]}");
+                                    });
+        
             return false;
         }
 
