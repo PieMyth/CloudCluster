@@ -31,7 +31,7 @@ namespace mongoCluster
         }
 
         // database name
-        private const String _dbName = "airbnb";
+        private const string _dbName = "airbnb";
 
         // database (established connection if containing a non-null value)
         private IMongoDatabase _db;
@@ -58,6 +58,9 @@ namespace mongoCluster
             get { return this._collections; }
         }
 
+        // test boolean that turns on local tests if true, does not test if false
+        private bool _test;
+
         /// <summary>Default constructor</summary>
         public Driver()
         {
@@ -65,6 +68,7 @@ namespace mongoCluster
             this._db = null;
             this._connection = ConfigurationManager.AppSettings.Get("connectionStrings");
             this._collections = new Dictionary<string, IMongoCollection<BsonDocument>>();
+            this._test = true;
         }
 
         /// <summary>Establishes connection to database</summary>
@@ -83,82 +87,36 @@ namespace mongoCluster
 
         /// <summary>Check if a collection exists</summary>
         /// <returns>True if collection exists, False otherwise</returns>
-        public bool collectionExists(String collectionName)
+        public bool collectionExists(string collectionName)
         {
             return _collectionExists(collectionName);
         }
 
         /// <summary>Accesses and retrieves a specified collection</summary>
         /// <returns>True if successfully accessed, False, otherwise</returns>
-        public bool getCollection(String collectionName)
+        public bool getCollection(string collectionName)
         {
             return this._getCollection(collectionName);
         }
 
         /// <summary>Creates a new collection.</summary>
         /// <returns>True if successfully created, False, if collection exists or failed to be created</returns>
-        public bool addCollection(String collectionName)
+        public bool addCollection(string collectionName)
         {
             return this._addCollection(collectionName);
         }
 
         /// <summary>Deletes an existing collection.</summary>
         /// <returns>True if deleted collection, False, if otherwise</returns>
-        public bool deleteCollection(String collectionName)
+        public bool deleteCollection(string collectionName)
         {
             return this._deleteCollection(collectionName);
-        }
-
-        /// <summary>Appends a path segment to the current working directory</summary>
-        /// <param name="pathName">The path segment to append</param>
-        /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
-        private String _getOutputPath(String pathName)
-        {  
-            // The project root folder, "mongoCluster", is  ~/bin/Debug/netcoreapp3.0/<assemblyExecutable.exe
-            return Path.Combine(
-                    Path.Combine(
-                        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                        "../../..")
-                   , @pathName);
-        }
-
-        /// <summary>Creates the path to a file if it does not already exist</summary>
-        /// <param name="filePath">Path to the file to create</param>
-        /// <returns>True if path exists or was created successfully, False, otherwise</returns>
-        private bool _createFile(ref FileInfo filePath)
-        {
-            try
-            {
-                // Does nothing if file already exists
-                filePath.Directory.Create();
-            }
-            catch (IOException err)
-            {
-                logger.Error($"Error: Failed to create query output directory: {err}");
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>Creates the directories and file for storing query output to an external file.</summary>
-        /// <param name="file">A reference to the file path to create</param>
-        /// <param name="functionName">The function name to store</param>
-        /// <returns>True if created file, False, otherwise</returns>
-        private bool _prepareQueryOutput(string functionName, ref FileInfo file)
-        {
-            // Create the absolute path to the output .txt file for this query
-            String fileName = functionName + ".txt";
-            String filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
-            file = new FileInfo(_getOutputPath(filePath));
-
-            // Create the directories for the output path if they do not already exist
-            return this._createFile(ref file);
         }
 
         /// <summary>A Query that counts the total number of documents in a collection</summary>
         /// <param name="collectionName">The string collection to query</param>
         /// <returns>A total count of documents of long type</returns>
-        public long queryCountDocuments(String collectionName)
+        public long queryCountDocuments(string collectionName)
         {
             return this._queryCountDocuments(collectionName);
         }
@@ -169,7 +127,7 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collectionName">The string collection to query</param>
         /// <returns>Returns the amount of documents from query</returns>
-        public bool queryTest(String collectionName)
+        public bool queryTest(string collectionName)
         {
             // a list of tuples containing (price_limit, min_nights_limit)
             List<Tuple<int, int>> testInputs = new List<Tuple<int, int>>();
@@ -197,7 +155,7 @@ namespace mongoCluster
         /// <summary>Query 1: Find the number of listings available with greater than 2 bedrooms in Portland.</summary>
         /// <param name="collectionName">String name of collection</param>
         /// <returns>True if successful, False otherwise</returns>
-        public bool queryCount(String collectionName)
+        public bool queryCount(string collectionName)
         {
             // Prepare the external file to store this query's output
             FileInfo file = null;
@@ -208,7 +166,7 @@ namespace mongoCluster
             using (StreamWriter fout =
                 new StreamWriter(file.FullName))
             {
-                String output;
+                string output;
                 DateTime start;
 
                 // Run query 1 - Count query
@@ -241,9 +199,10 @@ namespace mongoCluster
         /// Find the listings with the top 5 highest number of reviews for the entire dataset.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public bool querySortedSubset(String collectionName)
+        public bool querySortedSubset(string collectionName)
         {
             string queryName = "Query 2 - Sorted Subset";
+            string result;
             FileInfo file = null;
             DateTime start;
 
@@ -258,10 +217,9 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._querySortedSubset(collectionName, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                bool queryResult = this._querySortedSubset(this._collections[collectionName], fout);
+                result = $"Result {queryResult}";
+                result += $"\nQuery run time: {DateTime.UtcNow - start}";
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -272,7 +230,7 @@ namespace mongoCluster
         /// For all listings that are classified as a house that have been updated within a week, what percentage of these have a strict cancellation policy?
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public bool querySubsetSearch(String collectionName)
+        public bool querySubsetSearch(string collectionName)
         { 
             string queryName = "Query 3 - Subset Search";
             FileInfo file = null;
@@ -289,10 +247,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._querySubsetSearch(collectionName, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                this._querySubsetSearch(collectionName, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -302,7 +257,7 @@ namespace mongoCluster
         /// Find the average host response rate for listings with a price per night over $1000.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public bool queryAverage(String collectionName)
+        public bool queryAverage(string collectionName)
         { 
             string queryName = "Query 4 - Average";
             FileInfo file = null;
@@ -319,10 +274,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._queryAverage(collectionName, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                this._queryAverage(collectionName, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -333,7 +285,7 @@ namespace mongoCluster
         /// Update all listings that have more than 2 bedrooms and more than 2 bathrooms from Portland to require guest phone verification.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public bool queryUpdate(String collectionName)
+        public bool queryUpdate(string collectionName)
         {
             string queryName = "Query 5 - Update";
             FileInfo file = null;
@@ -350,10 +302,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._queryUpdate(collectionName, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                this._queryUpdate(collectionName, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -366,7 +315,7 @@ namespace mongoCluster
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
         public bool queryJoin(String firstCollection, String secondCollection)
-        { 
+        {
             string queryName = "Query 6 - Join";
             FileInfo file = null;
             DateTime start;
@@ -382,10 +331,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._queryJoin(firstCollection, secondCollection, fout)) {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
+                this._queryJoin(firstCollection, secondCollection, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -429,7 +375,7 @@ namespace mongoCluster
 
         /// <summary>Check if a collection exists</summary>
         /// <returns>True if collection exists, False otherwise</returns>
-        private bool _collectionExists(String collectionName)
+        private bool _collectionExists(string collectionName)
         {
             // modified from https://stackoverflow.com/questions/25017219/how-to-check-if-collection-exists-in-mongodb-using-c-sharp-driver
             BsonDocument filter = new BsonDocument("name", collectionName);
@@ -450,7 +396,7 @@ namespace mongoCluster
 
         /// <summary>Accesses and returns a specified collection</summary>
         /// <returns>True if successfully accessed, False, otherwise</returns>
-        private bool _getCollection(String collectionName)
+        private bool _getCollection(string collectionName)
         {
             if (!this._collectionExists(collectionName))
                 return false;
@@ -470,7 +416,7 @@ namespace mongoCluster
 
         /// <summary>Creates a new collection.</summary>
         /// <returns>True if successfully created, False, if collection exists or failed to be created</returns>
-        private bool _addCollection(String collectionName)
+        private bool _addCollection(string collectionName)
         {
             if (this._collectionExists(collectionName))
                 return false;
@@ -490,7 +436,7 @@ namespace mongoCluster
 
         /// <summary>Deletes an existing collection.</summary>
         /// <returns>True if successfully deleted, False, if otherwise</returns>
-        private bool _deleteCollection(String collectionName)
+        private bool _deleteCollection(string collectionName)
         {
             if (!this._collectionExists(collectionName))
                 return false;
@@ -517,7 +463,7 @@ namespace mongoCluster
         /// <summary>A Query that counts the total number of documents in a collection</summary>
         /// <param name="collectionName">The string collection to query</param>
         /// <returns>A total count of documents of long type</returns>
-        private long _queryCountDocuments(String collectionName)
+        private long _queryCountDocuments(string collectionName)
         {
             BsonDocument filter = new BsonDocument();
             if (!this._getCollection(collectionName))
@@ -614,16 +560,29 @@ namespace mongoCluster
         /// Query 2: Sorted Subset
         /// Find the listings with the top 5 highest number of reviews for the entire dataset.
         /// </summary>
-        /// <param name="collectionName">String representing the collection</param>
+        /// <param name="collection">The collection containing the reviews</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _querySortedSubset(String collectionName, StreamWriter fout)
+        // private async Task<bool> _querySortedSubset(IMongoCollection<BsonDocument> collection, StreamWriter fout)
+        private bool _querySortedSubset(IMongoCollection<BsonDocument> collection, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a sort ($sort) on the number_of_reviews decreasing (-1).
             *      2. Project a limited number of columns to add additional complexity.
             *      3. Limit to the top 5 results ($limit).
             */
-            // TODO: stub
+
+            // Create index on review numbers
+            fout.WriteLine("Creating new index on number_of_reviews, descending");
+            logger.Info($"Creating new index on number_of_reviews, descending");
+            string indexToCreate = "number_of_reviews";
+            _ = this._createIndexDescending(collection, indexToCreate);
+
+            // TODO: Michelle wip: filter the top 5 results using the newly created index
+            var builders = Builders<BsonDocument>.Filter;
+            var filter = builders.Gt(indexToCreate, 0);
+            var list = collection.Find(filter).Limit(5);
+            fout.WriteLine($"QUERY: {list}");
+            logger.Info($"QUERY: \n{list}");
             return false;
         }
 
@@ -634,7 +593,7 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _querySubsetSearch(String collectionName, StreamWriter fout)
+        private bool _querySubsetSearch(string collectionName, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a filter on the data to only grab documents where property_type is equal to “House”.
@@ -654,7 +613,7 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _queryAverage(String collectionName, StreamWriter fout)
+        private bool _queryAverage(string collectionName, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a filter to find listings with price greater than $1000 ($gt)
@@ -670,7 +629,7 @@ namespace mongoCluster
         /// </summary>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
         /// <param name="collectionName">String representing the collection</param>
-        private bool _queryUpdate(String collectionName, StreamWriter fout)
+        private bool _queryUpdate(string collectionName, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform an updateMany on all listings from Portland 
@@ -687,7 +646,7 @@ namespace mongoCluster
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _queryJoin(String firstCollection, String secondCollection, StreamWriter fout)
+        private bool _queryJoin(string firstCollection, string secondCollection, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a filter on the data to find all listings with city equal to “Portland” and greater than 3 bedrooms. 
@@ -705,7 +664,9 @@ namespace mongoCluster
         { 
             Console.WriteLine('\n' + new string('-', 100) + '\n');
             fout.WriteLine(queryName);
-            return DateTime.UtcNow;
+            DateTime now = DateTime.UtcNow;
+            fout.WriteLine($"Query began at: {now}");
+            return now;
         }
 
         /// <summary> Records the final metrics of a query</summary>
@@ -715,8 +676,97 @@ namespace mongoCluster
         {
             DateTime stop = DateTime.UtcNow;
             string output = $"\nQuery run time: {stop - start}";
-            logger.Info(output);
-            fout.WriteLine(output);
+            logger.Info($"{output}");
+            fout.Write($"Query ended at: {stop}");
+            fout.Write(output);
+        }
+
+        /// <summary>Appends a path segment to the current working directory</summary>
+        /// <param name="pathName">The path segment to append</param>
+        /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
+        private string _getOutputPath(string pathName)
+        {  
+            // The project root folder, "mongoCluster", is  ~/bin/Debug/netcoreapp3.0/<assemblyExecutable.exe
+            return Path.Combine(
+                    Path.Combine(
+                        Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                        "../../..")
+                   , @pathName);
+        }
+
+        /// <summary>Creates the path to a file if it does not already exist</summary>
+        /// <param name="filePath">Path to the file to create</param>
+        /// <returns>True if path exists or was created successfully, False, otherwise</returns>
+        private bool _createFile(ref FileInfo filePath)
+        {
+            try
+            {
+                // Does nothing if file already exists
+                filePath.Directory.Create();
+            }
+            catch (IOException err)
+            {
+                logger.Error($"Error: Failed to create query output directory: {err}");
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>Creates the directories and file for storing query output to an external file.</summary>
+        /// <param name="file">A reference to the file path to create</param>
+        /// <param name="functionName">The function name to store</param>
+        /// <returns>True if created file, False, otherwise</returns>
+        private bool _prepareQueryOutput(string functionName, ref FileInfo file)
+        {
+            // Create the absolute path to the output .txt file for this query
+            string fileName = functionName + ".txt";
+            string filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
+            file = new FileInfo(_getOutputPath(filePath));
+
+            // Create the directories for the output path if they do not already exist
+            return this._createFile(ref file);
+        }
+
+        /// <summary>
+        /// Create index. Note that this is an idempotent operation so calling it multiple times
+        /// will not create any change except when the index is first created
+        /// </summary>
+        /// <param name="collection">The collection to index</param>
+        /// <param name="newIndex">Name of index to create</param>
+        /// <returns>
+        /// A Task with result of the newly created index. 
+        /// However, note that if the index already exists, then the "newIndex" value will not be returned
+        /// </returns>
+        private async Task<string> _createIndexDescending(IMongoCollection<BsonDocument> collection, string newIndex)
+        { 
+            var keys = Builders<BsonDocument>.IndexKeys.Descending(newIndex);
+            var model = new CreateIndexModel<BsonDocument>(keys);
+            var createIndex = await collection.Indexes.CreateOneAsync(model).ConfigureAwait(false);
+
+            // TEST: If test is true, then all existing indexes can be listed to confirm the correct index exists
+            if (this._test)
+            {
+                Task<string> indexes = this._listIndexes(collection);
+                string result = indexes.Result;
+                Console.WriteLine($"Indexes after creating {newIndex} \n{result}");
+                logger.Info($"Indexes after creating {newIndex} \n{result}");
+            }
+
+            return createIndex;
+        }
+
+        /// <summary>List a collections available indexes</summary>
+        /// <param name="collection">The collection containing the reviews</param>
+        /// <returns>Default true for listing indexes</returns>
+        private async Task<string> _listIndexes(IMongoCollection<BsonDocument> collection)
+        {
+            string indexes = "";
+
+            using (var cursor = await collection.Indexes.ListAsync())
+            {
+                await cursor.ForEachAsync(doc => indexes += $"{doc.ToString()}\n");
+            }
+            return indexes;
         }
     }
 }

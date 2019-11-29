@@ -118,6 +118,5 @@ namespace mongoCluster.Tests
             driver.getCollection(_listings);
             Assert.True(driver.queryCountDocuments(_listings) > 5000);
         }
-
     }
 }
