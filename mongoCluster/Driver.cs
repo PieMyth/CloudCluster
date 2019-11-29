@@ -710,7 +710,6 @@ namespace mongoCluster
             Console.WriteLine('\n' + new string('-', 100) + '\n');
             output = "Query 5 - Join";
             start = DateTime.UtcNow;
-
             var aggregate = firstCollection.Aggregate().Match(new BsonDocument("city", "Portland")).Lookup("reviews", "id", "listing_id", "result").Unwind(x => x["result"]).
                 Group(BsonDocument.Parse("{'_id': '$id', 'host_name': {$first: '$host_name'}, 'result': {$first: '$result'}}"))
                 .ToList();
