@@ -68,7 +68,7 @@ namespace mongoCluster
             this._db = null;
             this._connection = ConfigurationManager.AppSettings.Get("connectionStrings");
             this._collections = new Dictionary<string, IMongoCollection<BsonDocument>>();
-            this._test = true;
+            this._test = false;
         }
 
         /// <summary>Establishes connection to database</summary>
@@ -199,10 +199,9 @@ namespace mongoCluster
         /// Find the listings with the top 5 highest number of reviews for the entire dataset.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public bool querySortedSubset(string collectionName)
+        public async Task<bool> querySortedSubset(string collectionName)
         {
             string queryName = "Query 2 - Sorted Subset";
-            string result;
             FileInfo file = null;
             DateTime start;
 
@@ -217,9 +216,8 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                bool queryResult = this._querySortedSubset(this._collections[collectionName], fout);
-                result = $"Result {queryResult}";
-                result += $"\nQuery run time: {DateTime.UtcNow - start}";
+                await this._querySortedSubset(this._collections[collectionName], fout);
+                string result =  $"Query run time: {DateTime.UtcNow - start}";
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -562,28 +560,33 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collection">The collection containing the reviews</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        // private async Task<bool> _querySortedSubset(IMongoCollection<BsonDocument> collection, StreamWriter fout)
-        private bool _querySortedSubset(IMongoCollection<BsonDocument> collection, StreamWriter fout)
+        private async Task _querySortedSubset(IMongoCollection<BsonDocument> collection, StreamWriter fout)
         {
-            /*  Implementation Strategy:
-            *      1. Perform a sort ($sort) on the number_of_reviews decreasing (-1).
-            *      2. Project a limited number of columns to add additional complexity.
-            *      3. Limit to the top 5 results ($limit).
-            */
+            int count = 0;  // count top five reviewed results
 
             // Create index on review numbers
-            fout.WriteLine("Creating new index on number_of_reviews, descending");
-            logger.Info($"Creating new index on number_of_reviews, descending");
+            string opDescription = "Creating new index on number_of_reviews, descending";
+            logger.Info(opDescription);
             string indexToCreate = "number_of_reviews";
             _ = this._createIndexDescending(collection, indexToCreate);
 
-            // TODO: Michelle wip: filter the top 5 results using the newly created index
-            var builders = Builders<BsonDocument>.Filter;
-            var filter = builders.Gt(indexToCreate, 0);
-            var list = collection.Find(filter).Limit(5);
-            fout.WriteLine($"QUERY: {list}");
-            logger.Info($"QUERY: \n{list}");
-            return false;
+            // Create filter
+            FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Gte(indexToCreate, 0);
+
+            // Record the result description
+            string resultDescription = "Top five listings with sorted number of reviews:";
+            logger.Info(resultDescription);
+
+            // Run the query
+            await collection.Find(filter)
+                            .Limit(5)
+                            .ForEachAsync(doc =>
+                            {
+                                count++;
+                                var res = doc.ToDictionary();
+                                logger.Info($"({count}) ID: {res["id"]}, number of reviews: {res[indexToCreate]}, " +
+                                            $"Description: A {res["property_type"]} located in {res["city"]}, {res["state"]}.");
+                            });
         }
 
         /// <summary>

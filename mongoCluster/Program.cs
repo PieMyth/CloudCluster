@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+
 using NLog;
 
 
@@ -68,9 +70,10 @@ namespace mongoCluster
                 }
 
                 // Query 2: Sorted Subset
-                if (!driver.querySortedSubset(_listings)) {
+                Task<Boolean> resultSortedSubset = driver.querySortedSubset(_listings);
+
+                if (!resultSortedSubset.Result)
                     logger.Error("Error: Query2: Sorted subset query failed");
-                }
 
                 // Query 3: Subset-search
                 if (!driver.querySubsetSearch(_listings)) {
