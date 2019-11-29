@@ -560,7 +560,6 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collection">The collection containing the reviews</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        /// <returns>Task Boolean that is True if there are results, False otherwise</returns>
         private async Task _querySortedSubset(IMongoCollection<BsonDocument> collection, StreamWriter fout)
         {
             int count = 0;  // count top five reviewed results
