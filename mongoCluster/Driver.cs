@@ -382,7 +382,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                if (!this._queryJoin(firstCollection, secondCollection, fout)) {
+                if (!this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout)) {
                     this._stopQueryMetrics(fout, start);
                     return false;
                 }
@@ -687,15 +687,41 @@ namespace mongoCluster
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _queryJoin(String firstCollection, String secondCollection, StreamWriter fout)
+        private bool _queryJoin(IMongoCollection<BsonDocument> firstCollection, IMongoCollection<BsonDocument> secondCollection, StreamWriter fout)
         {
+
             /*  Implementation Strategy:
-            *      1. Perform a filter on the data to find all listings with city equal to “Portland” and greater than 3 bedrooms. 
-            *      2. Perform a lookup between the listings and reviews tables with id and listing_id as the lookup criteria.
-            *      3. For each host id, return the max date from the reviews ($max). (This possibly can be completed before the lookup for efficiency)
-            */
-            // TODO: stub
-            return false;
+           *      1. Perform a filter on the data to find all listings with city equal to “Portland” and greater than 3 bedrooms. 
+           *      2. Perform a lookup between the listings and reviews tables with id and listing_id as the lookup criteria.
+           *      3. For each host id, return the max date from the reviews ($max). (This possibly can be completed before the lookup for efficiency)
+           */
+
+
+            // Prepare the external file to store this query's output
+            System.IO.FileInfo file = null;
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file for storing query output, clears out previous text
+
+            String output;
+            DateTime start;
+
+            Console.WriteLine('\n' + new string('-', 100) + '\n');
+            output = "Query 5 - Join";
+            start = DateTime.UtcNow;
+
+            var aggregate = firstCollection.Aggregate().Match(new BsonDocument("city", "Portland")).Lookup("reviews", "id", "listing_id", "result").Unwind(x => x["result"]).
+                Group(BsonDocument.Parse("{'_id': '$id', 'host_name': {$first: '$host_name'}, 'result': {$first: '$result'}}"))
+                .ToList();
+          
+           // output += $"\nQuery run time: {DateTime.UtcNow - start}";
+            var resultsCount = aggregate.Count;
+            output += $"\nNumber of listings with their most recent review = {resultsCount} \n";
+            logger.Info(output);
+            fout.WriteLine(output);
+            
+            return true;
         }
 
         /// <summary> Records the starting metrics of a query
