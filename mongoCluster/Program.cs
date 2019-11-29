@@ -94,16 +94,22 @@ namespace mongoCluster
             // Run queries specific to the reviews collection if a successful connection is established
             if (driver.getCollection(_reviews))
             {
+                
                 // Query 6: Join
                 /*
                 if (!driver.queryJoin(_listings, _reviews))
                 {
                     logger.Error("Error: Query6: Join query failed");
                 }
-
-                // Query ?: Join 2.0
                 */
+                // Query 7: Join 2.0, Frequent Traveller
+                if (!driver.queryFrequentTraveller(_reviews, _listings))
+                {
+                    logger.Error("Error: Query7: Join2.0, Frequent Traveller query failed");
+                }
                 
+
+
             } // End queries specific to the reviews collection
 
 

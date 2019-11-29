@@ -391,6 +391,44 @@ namespace mongoCluster
             return true;
         }
 
+        /// <summary>
+        /// Query 7: Second Join
+        /// Returns the listings of the person who has travelled the most.
+        /// </summary>
+        /// <param name="firstCollection">String representing one collection</param>
+        /// <param name="secondCollection">String representing a second collection</param>
+        public bool queryFrequentTraveller(String firstCollection, String secondCollection)
+        {
+            string queryName = "Query 7 - Another join";
+            long count = -1;
+            FileInfo file = null;
+            DateTime start;
+
+            // Prepare the external file to store this query's output
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file (clearing previous content if necessary)
+            // Record start/end time metrics, query results to file
+            using (StreamWriter fout = new StreamWriter(file.FullName))
+            {
+                start = this._startQueryMetrics(queryName, fout);
+
+                // Run the query
+                count = this._queryFrequentTraveller(this._collections[firstCollection], secondCollection, fout);
+                if ( count < 0)
+                {
+                    this._stopQueryMetrics(fout, start);
+                    return false;
+                }
+                this._stopQueryMetrics(fout, start);
+                String result = $"Returned {count} documents!";
+                logger.Info(result);
+                fout.WriteLine(result);
+            }
+            return true;
+        }
+
         /// <summary>Establishes connection to database</summary>
         /// <returns>True if connection was established, False, otherwise</returns>
         private bool _establishConnection()
@@ -696,6 +734,59 @@ namespace mongoCluster
             */
             // TODO: stub
             return false;
+        }
+
+        /// <summary>
+        /// Query 7: Second Join
+        /// Returns the listings of the person who has travelled the most.
+        /// </summary>
+        /// <param name="firstCollection">String representing one collection</param>
+        /// <param name="secondCollection">String representing a second collection</param>
+        /// <param name="fout">StreamWriter stream for for writing out query results</param>
+        private long _queryFrequentTraveller(IMongoCollection<BsonDocument> firstCollection, String secondCollection, StreamWriter fout)
+        {
+            /* Implementation Strategy:
+             *    1. Get the most common reviewer_id, reviewer name, and the listing id
+             *    2. Merge with the listing by listing id and retrieve the city and neighborhood
+             */
+            long count = 0;
+            String output = "";
+            var query1 = firstCollection.Aggregate().Group(BsonDocument.Parse("{_id: '$reviewer_id', 'count': {$sum: 1}, 'reviewer_name': {'$min': '$reviewer_name'}}"))
+                                                    .Sort("{ 'count': -1 }")
+                                                    .Limit(1)
+                                                    .Project("{'_id': 0, 'reviewer_id': '$_id', 'reviewer_name': 1}")
+                                                    .First();
+
+            if (!query1.Contains("reviewer_id") || !query1.Contains("reviewer_name"))
+            {
+                output = "Failed to retrieve most travelled reviewer!";
+                logger.Error(output);
+                fout.WriteLine(output);
+                return -1;
+            }
+            int reviewerId = query1.GetValue("reviewer_id").ToInt32();
+            String reviewerName = query1.GetValue("reviewer_name").ToString();
+
+            var query2 = firstCollection.Aggregate().Match($"{{reviewer_id: {reviewerId}}}")
+                                                    .Project("{ '_id': 0, 'reviewer_name': 1, 'reviewer_id': 1, 'listing_id': 1, 'date': 1 }")
+                                                    .Sort("{ date: 1 }")
+                                                    .Lookup(secondCollection, "listing_id", "id", "listings")
+                                                    .Unwind("listings")
+                                                    .Project("{ '_id':0, 'reviewer_name':1, 'date':1, 'location': {$concat: ['$listings.neighbourhood_cleansed', ', ', '$listings.smart_location']} }");
+
+            output = reviewerName + " is the most frequent traveller!";
+            Console.WriteLine(output);
+            fout.WriteLine(output);
+            var results = query2.ToList();
+            foreach(BsonDocument doc in results)
+            {
+                count++;
+                var result = doc.ToDictionary();
+                output = $"[{count}]\t{result["date"]} - {result["location"]}";
+                Console.WriteLine(output);
+                fout.WriteLine(output);
+            };
+            return count;
         }
 
         /// <summary> Records the starting metrics of a query
