@@ -45,7 +45,6 @@ namespace mongoCluster
             if (driver.getCollection(_listings))
             {
                 // Run a simple query that counts the total number of listings
-                /*
                 long totalListings = driver.queryCountDocuments(_listings);
                 if (totalListings.Equals(0))
                 {
@@ -57,6 +56,7 @@ namespace mongoCluster
                     logger.Info($"There are {totalListings} totalListings");
                 }
 
+                /*
                 // Run a test query
                 if (!driver.queryTest(_listings)) {
                     logger.Error("Error: Test query failed");
@@ -69,26 +69,24 @@ namespace mongoCluster
 
                 // Query 2: Sorted Subset
                 if (!driver.querySortedSubset(_listings)) {
-                    logger.Error("Error: Query2: Sorted subset driver.query failed");
+                    logger.Error("Error: Query2: Sorted subset query failed");
                 }
-
 
                 // Query 3: Subset-search
                 if (!driver.querySubsetSearch(_listings)) {
-                    logger.Error("Error: Query3: Subset search driver.query failed");
+                    logger.Error("Error: Query3: Subset search query failed");
                 }
 
                 // Query 4: Average
                 if (!driver.queryAverage(_listings)) {
-                    logger.Error("Error: Query4: Average driver.query failed");
+                    logger.Error("Error: Query4: Average query failed");
                 }
 
-                // Query 6: Update
+                // Query 5: Update
                 if (!driver.queryUpdate(_listings)) {
-                    logger.Error("Error: Query6: Update query failed");
+                    logger.Error("Error: Query5: Update query failed");
                 }
                 */
-
 
             } // End queries specific to the listings collection
 
@@ -96,13 +94,15 @@ namespace mongoCluster
             // Run queries specific to the reviews collection if a successful connection is established
             if (driver.getCollection(_reviews))
             {
-                // Query 5: Join
+                // Query 6: Join
+                /*
                 if (!driver.queryJoin(_listings, _reviews))
                 {
-                    logger.Error("Error: Query5: Join driver.query failed");
+                    logger.Error("Error: Query6: Join query failed");
                 }
 
                 // Query ?: Join 2.0
+                */
                 
             } // End queries specific to the reviews collection
 

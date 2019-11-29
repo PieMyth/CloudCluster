@@ -132,7 +132,7 @@ namespace mongoCluster
                 // Does nothing if file already exists
                 filePath.Directory.Create();
             }
-            catch (System.IO.IOException err)
+            catch (IOException err)
             {
                 logger.Error($"Error: Failed to create query output directory: {err}");
                 return false;
@@ -141,18 +141,18 @@ namespace mongoCluster
         }
 
         /// <summary>Creates the directories and file for storing query output to an external file.</summary>
+        /// <param name="file">A reference to the file path to create</param>
+        /// <param name="functionName">The function name to store</param>
         /// <returns>True if created file, False, otherwise</returns>
-        private bool _prepareQueryOutput(string functionName, ref System.IO.FileInfo file)
+        private bool _prepareQueryOutput(string functionName, ref FileInfo file)
         {
             // Create the absolute path to the output .txt file for this query
             String fileName = functionName + ".txt";
             String filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
-            file = new System.IO.FileInfo(_getOutputPath(filePath));
+            file = new FileInfo(_getOutputPath(filePath));
 
             // Create the directories for the output path if they do not already exist
-            if (!_createFile(ref file))
-                return false;
-            return true;
+            return this._createFile(ref file);
         }
 
         /// <summary>A Query that counts the total number of documents in a collection</summary>
@@ -200,13 +200,13 @@ namespace mongoCluster
         public bool queryCount(String collectionName)
         {
             // Prepare the external file to store this query's output
-            System.IO.FileInfo file = null;
+            FileInfo file = null;
             if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
                 return false;
 
             // Open external file for storing query output, clears out previous text
-            using (System.IO.StreamWriter fout =
-                new System.IO.StreamWriter(file.FullName))
+            using (StreamWriter fout =
+                new StreamWriter(file.FullName))
             {
                 String output;
                 DateTime start;
@@ -243,7 +243,28 @@ namespace mongoCluster
         /// <param name="collectionName">String representing the collection</param>
         public bool querySortedSubset(String collectionName)
         {
-            return _querySortedSubset(collectionName);
+            string queryName = "Query 2 - Sorted Subset";
+            FileInfo file = null;
+            DateTime start;
+
+            // Prepare the external file to store this query's output
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file (clearing previous content if necessary)
+            // Record start/end time metrics, query results to file
+            using (StreamWriter fout = new StreamWriter(file.FullName))
+            {
+                start = this._startQueryMetrics(queryName, fout);
+
+                // Run the query
+                if (!this._querySortedSubset(collectionName, fout)) {
+                    this._stopQueryMetrics(fout, start);
+                    return false;
+                }
+                this._stopQueryMetrics(fout, start);
+            }
+            return true;
         }
 
         /// <summary>
@@ -253,7 +274,28 @@ namespace mongoCluster
         /// <param name="collectionName">String representing the collection</param>
         public bool querySubsetSearch(String collectionName)
         { 
-            return _querySubsetSearch(collectionName);
+            string queryName = "Query 3 - Subset Search";
+            FileInfo file = null;
+            DateTime start;
+
+            // Prepare the external file to store this query's output
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file (clearing previous content if necessary)
+            // Record start/end time metrics, query results to file
+            using (StreamWriter fout = new StreamWriter(file.FullName))
+            {
+                start = this._startQueryMetrics(queryName, fout);
+
+                // Run the query
+                if (!this._querySubsetSearch(collectionName, fout)) {
+                    this._stopQueryMetrics(fout, start);
+                    return false;
+                }
+                this._stopQueryMetrics(fout, start);
+            }
+            return true;
         }
 
         /// Query 4: Average
@@ -262,28 +304,91 @@ namespace mongoCluster
         /// <param name="collectionName">String representing the collection</param>
         public bool queryAverage(String collectionName)
         { 
-            return _queryAverage(collectionName);
+            string queryName = "Query 4 - Average";
+            FileInfo file = null;
+            DateTime start;
+
+            // Prepare the external file to store this query's output
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file (clearing previous content if necessary)
+            // Record start/end time metrics, query results to file
+            using (StreamWriter fout = new StreamWriter(file.FullName))
+            {
+                start = this._startQueryMetrics(queryName, fout);
+
+                // Run the query
+                if (!this._queryAverage(collectionName, fout)) {
+                    this._stopQueryMetrics(fout, start);
+                    return false;
+                }
+                this._stopQueryMetrics(fout, start);
+            }
+            return true;
         }
 
         /// <summary>
-        /// Query 5: Join
+        /// Query 5: Update
+        /// Update all listings that have more than 2 bedrooms and more than 2 bathrooms from Portland to require guest phone verification.
+        /// </summary>
+        /// <param name="collectionName">String representing the collection</param>
+        public bool queryUpdate(String collectionName)
+        {
+            string queryName = "Query 5 - Update";
+            FileInfo file = null;
+            DateTime start;
+
+            // Prepare the external file to store this query's output
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file (clearing previous content if necessary)
+            // Record start/end time metrics, query results to file
+            using (StreamWriter fout = new StreamWriter(file.FullName))
+            {
+                start = this._startQueryMetrics(queryName, fout);
+
+                // Run the query
+                if (!this._queryUpdate(collectionName, fout)) {
+                    this._stopQueryMetrics(fout, start);
+                    return false;
+                }
+                this._stopQueryMetrics(fout, start);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Query 6: Join
         /// Return the most recent review for all listings from Portland with greater than 3 bedrooms that is also a house.
         /// </summary>
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
         public bool queryJoin(String firstCollection, String secondCollection)
         { 
-            return _queryJoin(firstCollection, secondCollection);
-        }
+            string queryName = "Query 6 - Join";
+            FileInfo file = null;
+            DateTime start;
 
-        /// <summary>
-        /// Query 6: Update
-        /// Update all listings that have more than 2 bedrooms and more than 2 bathrooms from Portland to require guest phone verification.
-        /// </summary>
-        /// <param name="collectionName">String representing the collection</param>
-        public bool queryUpdate(String collectionName)
-        {
-            return _queryUpdate(collectionName);
+            // Prepare the external file to store this query's output
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file (clearing previous content if necessary)
+            // Record start/end time metrics, query results to file
+            using (StreamWriter fout = new StreamWriter(file.FullName))
+            {
+                start = this._startQueryMetrics(queryName, fout);
+
+                // Run the query
+                if (!this._queryJoin(firstCollection, secondCollection, fout)) {
+                    this._stopQueryMetrics(fout, start);
+                    return false;
+                }
+                this._stopQueryMetrics(fout, start);
+            }
+            return true;
         }
 
         /// <summary>Establishes connection to database</summary>
@@ -329,10 +434,17 @@ namespace mongoCluster
             // modified from https://stackoverflow.com/questions/25017219/how-to-check-if-collection-exists-in-mongodb-using-c-sharp-driver
             BsonDocument filter = new BsonDocument("name", collectionName);
             var collections = new ListCollectionNamesOptions { Filter = filter };
+            var result = false;
 
-            var result = _db.ListCollectionNames(collections).Any();
-            Console.WriteLine($"collection name results = {result}");
+            try
+            {
+                result = _db.ListCollectionNames(collections).Any();
 
+            }
+            catch (MongoAuthenticationException)
+            {
+                throw new UnauthorizedAccessException();
+            }
             return _db.ListCollectionNames(collections).Any();
         }
 
@@ -503,7 +615,8 @@ namespace mongoCluster
         /// Find the listings with the top 5 highest number of reviews for the entire dataset.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        private bool _querySortedSubset(String collectionName)
+        /// <param name="fout">StreamWriter stream for for writing out query results</param>
+        private bool _querySortedSubset(String collectionName, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a sort ($sort) on the number_of_reviews decreasing (-1).
@@ -511,32 +624,8 @@ namespace mongoCluster
             *      3. Limit to the top 5 results ($limit).
             */
             // TODO: stub
-
-            // Prepare the external file to store this query's output
-            System.IO.FileInfo file = null;
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
-                return false;
-
-            // Open external file for storing query output, clears out previous text
-            using (System.IO.StreamWriter fout =
-                new System.IO.StreamWriter(file.FullName))
-            {
-                String output;
-                DateTime start;
-
-                Console.WriteLine('\n' + new string('-', 100) + '\n');
-                output = "Query 2 - Sorted Subset";
-                fout.WriteLine(output);
-
-                start = DateTime.UtcNow;
-                // Run query on this line
-                output += $"\nQuery run time: {DateTime.UtcNow - start}";
-                logger.Info(output);
-                fout.WriteLine(output);
-            }
             return false;
         }
-
 
         /// <summary>
         /// Query 3: Subset-search
@@ -544,7 +633,8 @@ namespace mongoCluster
         /// what percentage of these have a strict cancellation policy?
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        private bool _querySubsetSearch(String collectionName)
+        /// <param name="fout">StreamWriter stream for for writing out query results</param>
+        private bool _querySubsetSearch(String collectionName, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a filter on the data to only grab documents where property_type is equal to “House”.
@@ -555,29 +645,6 @@ namespace mongoCluster
             *         This can then be formatted to get this count divided by the total number of documents to gather a percentage
             */
             // TODO: stub
-
-            // Prepare the external file to store this query's output
-            System.IO.FileInfo file = null;
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
-                return false;
-
-            // Open external file for storing query output, clears out previous text
-            using (System.IO.StreamWriter fout =
-                new System.IO.StreamWriter(file.FullName))
-            {
-                String output;
-                DateTime start;
-
-                Console.WriteLine('\n' + new string('-', 100) + '\n');
-                output = "Query 3 - Subset-search";
-                fout.WriteLine(output);
-
-                start = DateTime.UtcNow;
-                // Run query on this line
-                output += $"\nQuery run time: {DateTime.UtcNow - start}";
-                logger.Info(output);
-                fout.WriteLine(output);
-            }
             return false;
         }
 
@@ -586,46 +653,41 @@ namespace mongoCluster
         /// Find the average host response rate for listings with a price per night over $1000.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        private bool _queryAverage(String collectionName)
+        /// <param name="fout">StreamWriter stream for for writing out query results</param>
+        private bool _queryAverage(String collectionName, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a filter to find listings with price greater than $1000 ($gt)
             *      2. Perform an average aggregation for the average host_response_rate
             */
             // TODO: stub
-
-            // Prepare the external file to store this query's output
-            System.IO.FileInfo file = null;
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
-                return false;
-
-            // Open external file for storing query output, clears out previous text
-            using (System.IO.StreamWriter fout =
-                new System.IO.StreamWriter(file.FullName))
-            {
-                String output;
-                DateTime start;
-
-                Console.WriteLine('\n' + new string('-', 100) + '\n');
-                output = "Query 4 - Average";
-                fout.WriteLine(output);
-
-                start = DateTime.UtcNow;
-                // Run query on this line
-                output += $"\nQuery run time: {DateTime.UtcNow - start}";
-                logger.Info(output);
-                fout.WriteLine(output);
-            }
             return false;
         }
 
         /// <summary>
-        /// Query 5: Join
+        /// Query 5: Update
+        /// Update all listings that have more than 2 bedrooms and more than 2 bathrooms from Portland to require guest phone verification.
+        /// </summary>
+        /// <param name="fout">StreamWriter stream for for writing out query results</param>
+        /// <param name="collectionName">String representing the collection</param>
+        private bool _queryUpdate(String collectionName, StreamWriter fout)
+        {
+            /*  Implementation Strategy:
+            *      1. Perform an updateMany on all listings from Portland 
+            *         with greater than 2 bedrooms and 2 bathrooms to set the require_guest_phone_verification field as true. 
+            */
+            // TODO: stub
+            return false;
+        }
+
+        /// <summary>
+        /// Query 6: Join
         /// Return the most recent review for all listings from Portland with greater than 3 bedrooms that is also a house.
         /// </summary>
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
-        private bool _queryJoin(String firstCollection, String secondCollection)
+        /// <param name="fout">StreamWriter stream for for writing out query results</param>
+        private bool _queryJoin(String firstCollection, String secondCollection, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a filter on the data to find all listings with city equal to “Portland” and greater than 3 bedrooms. 
@@ -633,68 +695,28 @@ namespace mongoCluster
             *      3. For each host id, return the max date from the reviews ($max). (This possibly can be completed before the lookup for efficiency)
             */
             // TODO: stub
-
-            // Prepare the external file to store this query's output
-            System.IO.FileInfo file = null;
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
-                return false;
-
-            // Open external file for storing query output, clears out previous text
-            using (System.IO.StreamWriter fout =
-                new System.IO.StreamWriter(file.FullName))
-            {
-                String output;
-                DateTime start;
-
-                Console.WriteLine('\n' + new string('-', 100) + '\n');
-                output = "Query 5 - Join";
-                fout.WriteLine(output);
-
-                start = DateTime.UtcNow;
-                // Run query on this line
-                output += $"\nQuery run time: {DateTime.UtcNow - start}";
-                logger.Info(output);
-                fout.WriteLine(output);
-            }
             return false;
         }
 
-        /// <summary>
-        /// Query 6: Update
-        /// Update all listings that have more than 2 bedrooms and more than 2 bathrooms from Portland to require guest phone verification.
-        /// </summary>
-        /// <param name="collectionName">String representing the collection</param>
-        private bool _queryUpdate(String collectionName)
+        /// <summary> Records the starting metrics of a query
+        /// <param name="queryName">String name of query to record</param>
+        /// <param name="fout">StreamWriter stream for for writing out query results</param>
+        private DateTime _startQueryMetrics(string queryName, StreamWriter fout)
+        { 
+            Console.WriteLine('\n' + new string('-', 100) + '\n');
+            fout.WriteLine(queryName);
+            return DateTime.UtcNow;
+        }
+
+        /// <summary> Records the final metrics of a query</summary>
+        /// <param name="fout">StreamWriter stream for for writing out query results</param>
+        /// <paramref name="start"/>The DateTime time that the query started</param>
+        private void _stopQueryMetrics(StreamWriter fout, DateTime start)
         {
-            /*  Implementation Strategy:
-            *      1. Perform an updateMany on all listings from Portland 
-            *         with greater than 2 bedrooms and 2 bathrooms to set the require_guest_phone_verification field as true. 
-            */
-            // TODO: stub
-
-            // Prepare the external file to store this query's output
-            System.IO.FileInfo file = null;
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
-                return false;
-
-            // Open external file for storing query output, clears out previous text
-            using (System.IO.StreamWriter fout =
-                new System.IO.StreamWriter(file.FullName))
-            {
-                String output;
-                DateTime start;
-
-                Console.WriteLine('\n' + new string('-', 100) + '\n');
-                output = "Query 6 - Update";
-                fout.WriteLine(output);
-
-                start = DateTime.UtcNow;
-                // Run query on this line
-                output += $"\nQuery run time: {DateTime.UtcNow - start}";
-                logger.Info(output);
-                fout.WriteLine(output);
-            }
-            return false;
+            DateTime stop = DateTime.UtcNow;
+            string output = $"\nQuery run time: {stop - start}";
+            logger.Info(output);
+            fout.WriteLine(output);
         }
     }
 }
