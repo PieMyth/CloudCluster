@@ -326,6 +326,39 @@ namespace mongoCluster
             return true;
         }
 
+        /// <summary>
+        /// Query 6: Join
+        /// Return the most recent review for all listings from Portland with greater than 3 bedrooms that is also a house.
+        /// </summary>
+        /// <param name="firstCollection">String representing one collection</param>
+        /// <param name="secondCollection">String representing a second collection</param>
+        public bool queryJoin(String firstCollection, String secondCollection)
+        {
+            string queryName = "Query 6 - Join";
+            FileInfo file = null;
+            DateTime start;
+
+            // Prepare the external file to store this query's output
+            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+                return false;
+
+            // Open external file (clearing previous content if necessary)
+            // Record start/end time metrics, query results to file
+            using (StreamWriter fout = new StreamWriter(file.FullName))
+            {
+                start = this._startQueryMetrics(queryName, fout);
+
+                // Run the query
+                if (!this._queryJoin(firstCollection, secondCollection, fout))
+                {
+                    this._stopQueryMetrics(fout, start);
+                    return false;
+                }
+                this._stopQueryMetrics(fout, start);
+            }
+            return true;
+        }
+
         /// <summary>Establishes connection to database</summary>
         /// <returns>True if connection was established, False, otherwise</returns>
         private bool _establishConnection()
