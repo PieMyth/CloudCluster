@@ -24,7 +24,7 @@ namespace mongoCluster
         // Atlas cluster connection string
         private string _connection;
 
-        public string Connection 
+        public string Connection
         {
             get { return this._connection; }
             set { this._connection = value; }
@@ -136,8 +136,8 @@ namespace mongoCluster
             int[] priceLimits = new int[] { 20, 100, 700 };
             int[] minimumNights = new int[] { 1, 7, 31 };
 
-            for (int i = 0; i < priceLimits.Length; i++) 
-            { 
+            for (int i = 0; i < priceLimits.Length; i++)
+            {
                 testInputs.Add(Tuple.Create(priceLimits[i], minimumNights[i]));
             }
 
@@ -217,7 +217,7 @@ namespace mongoCluster
 
                 // Run the query
                 await this._querySortedSubset(this._collections[collectionName], fout);
-                string result =  $"Query run time: {DateTime.UtcNow - start}";
+                string result = $"Query run time: {DateTime.UtcNow - start}";
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -229,7 +229,7 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
         public bool querySubsetSearch(string collectionName)
-        { 
+        {
             string queryName = "Query 3 - Subset Search";
             FileInfo file = null;
             DateTime start;
@@ -256,7 +256,7 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
         public bool queryAverage(string collectionName)
-        { 
+        {
             string queryName = "Query 4 - Average";
             FileInfo file = null;
             DateTime start;
@@ -326,11 +326,46 @@ namespace mongoCluster
             // Record start/end time metrics, query results to file
             using (StreamWriter fout = new StreamWriter(file.FullName))
             {
-                start = this._startQueryMetrics(queryName, fout);
+                List<double> resultsArray = new List<double>();
+                List<double> results2Array = new List<double>();
+                for (int i = 0; i < 5; i++)
+                {
+                    // Run the query without indices       
+                    _deleteAllIndexes(firstCollection);
+                    _deleteAllIndexes(secondCollection);
+                    start = this._startQueryMetrics(queryName, fout);
+                    var result = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); //Result in milliseconds
+                    fout.WriteLine(result);
+                    resultsArray.Add(result); // Add result to the list
+                    this._stopQueryMetrics(fout, start);
 
-                // Run the query
-                this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout);
-                this._stopQueryMetrics(fout, start);
+                    //Run with indices
+                    _createCustomIndex(firstCollection, "id");
+                    _createCustomIndex(secondCollection, "listing_id");
+                    start = this._startQueryMetrics(queryName, fout);
+                    var result2 = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); // Result in milliseconds
+                    fout.WriteLine(result2);
+                    results2Array.Add(result2); // Add result to the list
+                    this._stopQueryMetrics(fout, start);
+                }
+                // Sort and remove smallest and largest query run times for each run (with and without indices)
+                // Print average
+                resultsArray.Sort();
+                resultsArray.RemoveAt(0);
+                resultsArray.RemoveAt(3);
+                Console.WriteLine("Average for non-index join: ");
+                double resultSum = 0, resultCount = 0;
+                foreach (double val in resultsArray) { resultSum += val; resultCount++; }
+                Console.WriteLine(resultSum / resultCount);
+
+                results2Array.Sort();
+                results2Array.RemoveAt(0);
+                results2Array.RemoveAt(3);
+
+                Console.WriteLine("Average for index join:");
+                double result2Sum = 0, result2Count = 0;
+                foreach (double val in results2Array) { result2Sum += val; result2Count++; }
+                Console.WriteLine(result2Sum / result2Count);
             }
             return true;
         }
@@ -360,7 +395,7 @@ namespace mongoCluster
 
                 // Run the query
                 count = this._queryFrequentTraveller(this._collections[firstCollection], secondCollection, fout);
-                if ( count < 0)
+                if (count < 0)
                 {
                     this._stopQueryMetrics(fout, start);
                     return false;
@@ -372,7 +407,48 @@ namespace mongoCluster
             }
             return true;
         }
+        private bool _deleteAllIndexes(string currCollection)
+        {
+            // Drop all indexes
+            _collections[currCollection].Indexes.DropAll();
 
+            // Grab the current indices 
+            var cur = _collections[currCollection].Indexes.List().ToList();
+            //Should only have the default index from MongoDB remaining
+            if (cur.Count == 1)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool _createCustomIndex(string currCollection, string indexName)
+        {
+            var cur = _collections[currCollection].Indexes.List().ToList();
+            for (var i = 0; i < cur.Count; i++)
+            {
+                if (cur[i].GetValue("name") == indexName)
+                {
+                    Console.WriteLine("Index already exists");
+                    return false;
+                }
+            }
+            var indexBuilder = Builders<BsonDocument>.IndexKeys;
+            var indexModel = new CreateIndexModel<BsonDocument>(indexBuilder.Ascending(indexName));
+            _collections[currCollection].Indexes.CreateOne(indexModel);
+
+            // Grab the current indices 
+            cur = _collections[currCollection].Indexes.List().ToList();
+            //Print to see if the index was created
+            for (var i = 0; i < cur.Count; i++)
+            {
+                if (cur[i].GetValue("name") == indexName)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         /// <summary>Establishes connection to database</summary>
         /// <returns>True if connection was established, False, otherwise</returns>
         private bool _establishConnection()
@@ -403,7 +479,8 @@ namespace mongoCluster
                 throw new ArgumentException();
             }
 
-            if (this._db != null) { 
+            if (this._db != null)
+            {
                 return true;
             }
             return false;
@@ -489,7 +566,7 @@ namespace mongoCluster
                 logger.Error($"\nError: The collection name must be composed of valid characters:\n{err}");
                 throw new ArgumentNullException();
             }
-            
+
             // Check that the collection doesn't exist anymore
             if (this._collectionExists(collectionName))
                 return false;
@@ -558,7 +635,7 @@ namespace mongoCluster
         /// <param name="zipcode_end_limit">Integer representing ending zipcode range</param>
         /// <param name="city_limit">String defining a city as its own limit e.g. "Portland"</param>
         /// <returns>A long integer of the result count</returns>
-        private async Task<long> _queryCount(IMongoCollection<BsonDocument> collection, int bedroom_limit, 
+        private async Task<long> _queryCount(IMongoCollection<BsonDocument> collection, int bedroom_limit,
                                            int zipcode_start_limit = -1, int zipcode_end_limit = -1, string city_limit = "")
         {
             /*  Implementation Strategy:
@@ -575,7 +652,7 @@ namespace mongoCluster
                 filter = (b.Gte("zipcode", zipcode_start_limit) &
                           b.Lte("zipcode", zipcode_end_limit) &
                           b.Gt("bedrooms", bedroom_limit));
-            } 
+            }
             // Try to query by city name
             else if (city_limit != "")
             {
@@ -687,7 +764,7 @@ namespace mongoCluster
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _queryJoin(IMongoCollection<BsonDocument> firstCollection, IMongoCollection<BsonDocument> secondCollection, StreamWriter fout)
+        private double _queryJoin(IMongoCollection<BsonDocument> firstCollection, IMongoCollection<BsonDocument> secondCollection, StreamWriter fout)
         {
 
             /*  Implementation Strategy:
@@ -700,7 +777,7 @@ namespace mongoCluster
             // Prepare the external file to store this query's output
             System.IO.FileInfo file = null;
             if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
-                return false;
+                return 0;
 
             // Open external file for storing query output, clears out previous text
 
@@ -710,18 +787,19 @@ namespace mongoCluster
             Console.WriteLine('\n' + new string('-', 100) + '\n');
             output = "Query 5 - Join";
             start = DateTime.UtcNow;
-            var aggregate = firstCollection.Aggregate().Match(new BsonDocument("city","Portland")).Match(new BsonDocument("bedrooms",new BsonDocument("$gt",3)))
-                .Match(new BsonDocument("property_type","House"))
+            var aggregate = firstCollection.Aggregate().Match(new BsonDocument("city", "Portland")).Match(new BsonDocument("bedrooms", new BsonDocument("$gt", 3)))
+                .Match(new BsonDocument("property_type", "House"))
                 .Lookup("reviews", "id", "listing_id", "result").Unwind(x => x["result"]).
                 Group(BsonDocument.Parse("{'_id': '$id', 'host_name': {$first: '$host_name'}, 'result': {$first: '$result'}}"))
                 .ToList();
             output += $"\nQuery run time: {DateTime.UtcNow - start}";
             var resultsCount = aggregate.Count;
             output += $"\nNumber of listings with their most recent review = {resultsCount} \n";
-            logger.Info(output);
-            fout.WriteLine(output);
+            //logger.Info(output);
+            // fout.WriteLine(output);
 
-            return true;
+            var runTime = DateTime.UtcNow - start;
+            return runTime.Ticks / TimeSpan.TicksPerMillisecond;
         }
 
         /// <summary>
@@ -766,7 +844,7 @@ namespace mongoCluster
             Console.WriteLine(output);
             fout.WriteLine(output);
             var results = query2.ToList();
-            foreach(BsonDocument doc in results)
+            foreach (BsonDocument doc in results)
             {
                 count++;
                 var result = doc.ToDictionary();
@@ -781,7 +859,7 @@ namespace mongoCluster
         /// <param name="queryName">String name of query to record</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
         private DateTime _startQueryMetrics(string queryName, StreamWriter fout)
-        { 
+        {
             Console.WriteLine('\n' + new string('-', 100) + '\n');
             fout.WriteLine(queryName);
             DateTime now = DateTime.UtcNow;
@@ -805,7 +883,7 @@ namespace mongoCluster
         /// <param name="pathName">The path segment to append</param>
         /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
         private string _getOutputPath(string pathName)
-        {  
+        {
             // The project root folder, "mongoCluster", is  ~/bin/Debug/netcoreapp3.0/<assemblyExecutable.exe
             return Path.Combine(
                     Path.Combine(
@@ -813,15 +891,15 @@ namespace mongoCluster
                         "../../..")
                    , @pathName);
         }
-
-        /// <summary>Creates the path to a file if it does not already exist</summary>
-        /// <param name="filePath">Path to the file to create</param>
-        /// <returns>True if path exists or was created successfully, False, otherwise</returns>
         private bool _createFile(ref FileInfo filePath)
         {
             try
             {
                 // Does nothing if file already exists
+
+                /// <summary>Creates the path to a file if it does not already exist</summary>
+                /// <param name="filePath">Path to the file to create</param>
+                /// <returns>True if path exists or was created successfully, False, otherwise</returns>
                 filePath.Directory.Create();
             }
             catch (IOException err)
@@ -858,7 +936,7 @@ namespace mongoCluster
         /// However, note that if the index already exists, then the "newIndex" value will not be returned
         /// </returns>
         private async Task<string> _createIndexDescending(IMongoCollection<BsonDocument> collection, string newIndex)
-        { 
+        {
             var keys = Builders<BsonDocument>.IndexKeys.Descending(newIndex);
             var model = new CreateIndexModel<BsonDocument>(keys);
             var createIndex = await collection.Indexes.CreateOneAsync(model).ConfigureAwait(false);
