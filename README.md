@@ -19,6 +19,7 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
 
 <br>
 <hr/>
+
 ## Build / Run
 * Clone the project: `git clone git@github.com:PieMyth/CloudCluster.git`
 
@@ -29,6 +30,7 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
   ​    `dotnet run`
 <br>
 <hr/>
+
 ## Test
 * Run the unit tests through Visual Studio by selecting `Test >> Run All Tests` 
 * Alternately, test the project by going into the test directory *\*/CloudCluster/mongoCluster.Test/* and run the command :  
@@ -36,6 +38,7 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
   ​    `dotnet test`
 <br>
 <hr/>
+
 ## Visual Studio Setup
 1. Select the solution in order to build the driver correctly. This can be found in the `CloudCluster` directory: `CloudCluster.sln`
 1. Copy the connection string and put it in the connection_string variable in the program file
@@ -61,6 +64,7 @@ This guide will run you through setting up MongoDB on a cloud provider and conne
 1. If deleting all collections, set the `deleteAll` boolean to `true` in Program.cs
 <br>
 <hr/>
+
 ## Import Data
 If importing .csv or .json files from a folder:
     - Unzip the 'dataset.zip' file from the project root directory
@@ -70,6 +74,7 @@ If importing .csv or .json files from a folder:
     - Note: Do not have the imported file open in any other programs while running, or VS can't get a lock on the file
 <br>
 <hr/>
+
 ## Atlas Setup
 1. Navigate to the MongoDB Atlas website
 1. Build a new cluster
@@ -105,6 +110,7 @@ If importing .csv or .json files from a folder:
 1. You do not need to turn on or turn off clusters as Atlas manages this for you
 <br>
 <hr/>
+
 ## GCP Setup
 From the first link, 'MongoDB on Compute Engine'...
 1. Click *Launch on Compute Engine*
@@ -143,6 +149,7 @@ From the first link, 'MongoDB on Compute Engine'...
 1. Save
 <br>
 <hr/>
+
 ## TODOs
 - Set up Atlas clusters on AWS, GCP, and Azure
 - Use cursors to parse through large query results
@@ -159,6 +166,7 @@ From the first link, 'MongoDB on Compute Engine'...
     - Workaround: use C#'s Datetime.Now() for query runtime & take an average of performance
 <br>
 <hr/>
+
 ## Stretch Goals
 - Execute import & queries asynchronously
 - Log errors onto a local file (set this up in the Nlog.Config file)
@@ -174,6 +182,7 @@ From the first link, 'MongoDB on Compute Engine'...
     - If we figure out the service account, this is very do-able! It would just be a change of connection string.
 <br>
 <hr/>
+
 ## Resources
 <i>
 
@@ -194,6 +203,7 @@ From the first link, 'MongoDB on Compute Engine'...
 ### Tooling Versions
 * Visual Studio 2019
 <hr/>
+
 ## Troubleshooting
 
 1. If having trouble running tests, check that the App.config file is properly linked to the test directory
