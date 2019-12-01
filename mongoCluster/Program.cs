@@ -99,18 +99,18 @@ namespace mongoCluster
             {
                 
                 // Query 6: Join
-                /*
+                
                 if (!driver.queryJoin(_listings, _reviews))
                 {
                     logger.Error("Error: Query6: Join query failed");
                 }
-                */
+                /*
                 // Query 7: Join 2.0, Frequent Traveller
                 if (!driver.queryFrequentTraveller(_reviews, _listings))
                 {
                     logger.Error("Error: Query7: Join2.0, Frequent Traveller query failed");
                 }
-                
+                */
 
 
             } // End queries specific to the reviews collection
