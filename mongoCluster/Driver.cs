@@ -512,7 +512,7 @@ namespace mongoCluster
         /// <param name="repetitions">The amount of times to repeat this query for an average</param>
         public bool queryFrequentTraveller(String firstCollection, String secondCollection, int repetitions)
         {
-            string queryName = "Query 7 - Another join";
+            string queryName = $"Query 7 - Another join - {this._driverKey} - repetitions: {repetitions}";
             long queryCount = 0;
             FileInfo file = null;
             string functionName = MethodBase.GetCurrentMethod().Name;
@@ -521,7 +521,7 @@ namespace mongoCluster
             TimeSpan queryRunTime = TimeSpan.Zero;
 
             // Prepare the external file to store this query's output
-            if (!prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            if (!prepareQueryOutput(outputFilePath, ref file))
                 return false;
 
             // Open external file (clearing previous content if necessary)
