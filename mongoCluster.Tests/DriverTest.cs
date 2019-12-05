@@ -30,6 +30,7 @@ namespace mongoCluster.Tests
         [Theory]
         [InlineData("AWS")]
         [InlineData("GCP")]
+        [InlineData("Azure")]
         public void establishConnectionTest_connectionSuccessfullyEstablished(string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
@@ -40,6 +41,7 @@ namespace mongoCluster.Tests
         [Theory]
         [InlineData("AWS")]
         [InlineData("GCP")]
+        [InlineData("Azure")]
         public void getDatabaseTest_databaseSuccessfulyConnected(string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
@@ -53,6 +55,8 @@ namespace mongoCluster.Tests
         [InlineData(_reviews, "AWS")]
         [InlineData(_listings, "GCP")]
         [InlineData(_reviews, "GCP")]
+        [InlineData(_listings, "Azure")]
+        [InlineData(_reviews, "Azure")]
         public void collectionExistsTest_returnsTrue(String validCollection, string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
@@ -67,6 +71,8 @@ namespace mongoCluster.Tests
         [InlineData(_reviews, "AWS")]
         [InlineData(_listings, "GCP")]
         [InlineData(_reviews, "GCP")]
+        [InlineData(_listings, "Azure")]
+        [InlineData(_reviews, "Azure")]
         public void getCollectionTest_collectionSuccessfullyConnected(String validCollection, string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
@@ -81,6 +87,8 @@ namespace mongoCluster.Tests
         [InlineData("", "AWS")]
         [InlineData("invalidName", "GCP")]
         [InlineData("", "GCP")]
+        [InlineData("invalidName", "Azure")]
+        [InlineData("", "Azure")]
         public void collectionExistsTest_invalidValueReturnsFalse(String invalidCollection, string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
@@ -93,6 +101,7 @@ namespace mongoCluster.Tests
         [Theory]
         [InlineData(null, "AWS")]
         [InlineData(null, "GCP")]
+        [InlineData(null, "Azure")]
         public void collectionExistsTest_nullValueThrowsException(String nullValue, string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
@@ -107,6 +116,8 @@ namespace mongoCluster.Tests
         [InlineData("invalidName", "AWS")]
         [InlineData("", "GCP")]
         [InlineData("invalidName", "GCP")]
+        [InlineData("", "Azure")]
+        [InlineData("invalidName", "Azure")]
         public void getCollectionTest_invalidNameConnectionFails(String invalidCollection, string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
@@ -119,6 +130,7 @@ namespace mongoCluster.Tests
         [Theory]
         [InlineData(null, "AWS")]
         [InlineData(null, "GCP")]
+        [InlineData(null, "Azure")]
         public void getCollectionTest_nullvalueConnectionFails(String nullValue, string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
@@ -131,6 +143,7 @@ namespace mongoCluster.Tests
         [Theory]
         [InlineData("AWS")]
         [InlineData("GCP")]
+        [InlineData("Azure")]
         public void queryCountDocumentsTest_countGreaterThanFiveThousand(string validKey)
         {
             string connectionString = ConfigurationManager.AppSettings.Get(validKey);
