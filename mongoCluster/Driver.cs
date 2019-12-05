@@ -741,11 +741,16 @@ namespace mongoCluster
             var match = new BsonDocument
             {{
                 "$match", new BsonDocument
-                {{
-                        "price", new BsonDocument{
+                {   
+                    {"price", new BsonDocument{
                             {"$gt", price} 
                         }
-                }}
+                    },
+                    {"host_response_rate", new BsonDocument{
+                            {"$gte", 0}
+                        } 
+                    }
+                }
             }};
 
             var group = new BsonDocument
@@ -753,13 +758,12 @@ namespace mongoCluster
                     "$group", new BsonDocument
                     {
                         {"_id", BsonNull.Value},
-                        {"avg", new BsonDocument{{"$avg", "host_response_rate"}} }
+                        {"avg", new BsonDocument{{"$avg", "$host_response_rate"}} }
                     }
             }};
             var pipeline = new BsonDocument[] { match, group};
             var result = collection.Aggregate<BsonDocument>(pipeline).Single();
-            Console.WriteLine(pipeline.ToJson());
-            Console.WriteLine("Average response time for Airbnbs over {0}: \n{1}", price, result.ToJson());
+            Console.WriteLine("Average response time for Airbnbs over {0}: {1}", price, result["avg"]);
             return false;
         }
 
