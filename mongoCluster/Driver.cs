@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Reflection;
-using System.Configuration;
 
 using MongoDB.Driver;
 using MongoDB.Bson;
@@ -16,13 +15,25 @@ namespace mongoCluster
     public class Driver
     {
         // Logging
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static Logger logger;
 
         // Output folder for query results
         private const string _outputFolder = @"query_output";
 
+        // Path to the result file for graphing performance comparisons
+        private const string resultFile = @"result.csv";
+
+        // Columns for the result file for comparing query performances
+        private const string _resultFileHeaders = "query,benchmark_milliseconds,cloud_platform";
+
+        // Writer to the result file
+        public static StreamWriter _resout;
+
         // Atlas cluster connection string
         private string _connection;
+
+        // connection string key
+        private string _driverKey;
 
         public string Connection
         {
@@ -61,12 +72,33 @@ namespace mongoCluster
         // test boolean that turns on local tests if true, does not test if false
         private bool _test;
 
+        /// <summary>Static constructor</summary>
+        static Driver()
+        {
+            logger = LogManager.GetCurrentClassLogger();
+            FileInfo resultFile = null;
+            if (!Driver.prepareQueryOutput(Driver.resultFile, ref resultFile))
+            {
+                logger.Error("Failed to create the file for storing query performance results:" + resultFile.FullName);
+                Environment.Exit(1);
+            }
+            logger.Info("Created the file for storing query performance results:" + resultFile.FullName);
+            _resout = new StreamWriter(resultFile.FullName);
+            _resout.AutoFlush = true;
+            
+            // Write column headers
+            _resout.WriteLine(_resultFileHeaders);
+        }
+
         /// <summary>Default constructor</summary>
-        public Driver()
+        /// <param name="driverKey">The key that refers to this particular driver</param>
+        /// <param name="connectionString">Connection string to the database to connect to</param>
+        public Driver(string driverKey, string connectionString)
         {
             this._client = null;
             this._db = null;
-            this._connection = ConfigurationManager.AppSettings.Get("connectionStrings");
+            this._connection = connectionString;
+            this._driverKey = driverKey;
             this._collections = new Dictionary<string, IMongoCollection<BsonDocument>>();
             this._test = false;
         }
@@ -154,43 +186,73 @@ namespace mongoCluster
 
         /// <summary>Query 1: Find the number of listings available with greater than 2 bedrooms in Portland.</summary>
         /// <param name="collectionName">String name of collection</param>
+        /// <param name="repetitions">The amount of times to repeat this query for an average</param>
         /// <returns>True if successful, False otherwise</returns>
-        public bool queryCount(string collectionName)
+        public bool queryCount(string collectionName, int repetitions)
         {
-            // Prepare the external file to store this query's output
+            // Prepare the external files to store this query's output
             FileInfo file = null;
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            string functionName = MethodBase.GetCurrentMethod().Name;
+            string outputFilePath = this._driverKey + "/" + functionName + ".txt";
+            if (!prepareQueryOutput(outputFilePath, ref file))
                 return false;
 
             // Open external file for storing query output, clears out previous text
-            using (StreamWriter fout =
-                new StreamWriter(file.FullName))
+            StreamWriter fout = new StreamWriter(file.FullName);
+            string output;
+            DateTime start;
+            TimeSpan queryRunTime = TimeSpan.Zero;
+            long queryCount = 0;
+
+            // Run query 1 - Count query
+            Console.WriteLine('\n' + new string('-', 100) + '\n');
+            output = $"Query 1 - Count query - {this._driverKey} - repetitions: {repetitions}";
+            logger.Info(output);
+            fout.WriteLine(output);
+
+            // Using zipcode range (I'm only doing downtown portland zip codes)
+            for (int i = 0; i < repetitions; i++)
             {
-                string output;
-                DateTime start;
-
-                // Run query 1 - Count query
-                Console.WriteLine('\n' + new string('-', 100) + '\n');
-                output = "Query 1 - Count query";
-                logger.Info(output);
-                fout.WriteLine(output);
-
-                // Using zipcode range (I'm only doing downtown portland zip codes)
                 start = DateTime.UtcNow;
-                Task<long> queryCountResult = this._queryCount(this._collections[collectionName], 2, 97201, 97210);
-                output = $"There are {queryCountResult.Result} listings with over 2 bedrooms in zipcode range from 97201 - 972010.";
-                output += $"\nQuery run time: {DateTime.UtcNow - start}";
-                logger.Info(output);
-                fout.WriteLine(output);
-
-                // Using city name
-                start = DateTime.UtcNow;
-                Task<long> otherCountQueryResult = this._queryCount(this._collections[collectionName], 2, city_limit: "Portland");
-                output = $"There are {otherCountQueryResult.Result} listings with over 2 bedrooms in the city of Portland.";
-                output += $"\nQuery run time: {DateTime.UtcNow - start}";
-                logger.Info(output);
-                fout.WriteLine(output);
+                queryCount += (this._queryCount(this._collections[collectionName], 2, 97201, 97210)).Result;
+                queryRunTime += DateTime.UtcNow - start;
             }
+
+            // Calculate the average for query run time and count
+            queryRunTime /= repetitions;
+            queryCount /= repetitions;
+
+            // Print results to console and output files
+            output = $"There are {queryCount} listings with over 2 bedrooms in zipcode range from 97201 - 972010.";
+            output += $"\nQuery run time: {queryRunTime.TotalMilliseconds} milliseconds";
+            logger.Info(output);
+            fout.WriteLineAsync(output);
+
+            // Re-initialize query run time and count
+            queryCount = 0;
+            queryRunTime = TimeSpan.Zero;
+
+            // Using city name
+            for (int i = 0; i < repetitions; i++)
+            {
+                start = DateTime.UtcNow;
+                queryCount += (this._queryCount(this._collections[collectionName], 2, city_limit: "Portland")).Result;
+                queryRunTime += DateTime.UtcNow - start;
+            }
+
+            // Calculate the average for query run time and count
+            queryRunTime /= repetitions;
+            queryCount /= repetitions;
+
+            // Print results to console and output files
+            output = $"There are {queryCount} listings with over 2 bedrooms in the city of Portland.";
+            output += $"\nQuery run time: {queryRunTime.TotalMilliseconds} milliseconds";
+            logger.Info(output);
+            fout.WriteLine(output);
+
+            // Append query runtime to file for graphing performance
+            Driver._resout.WriteLine(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            fout.Close();
             return true;
         }
 
@@ -199,27 +261,43 @@ namespace mongoCluster
         /// Find the listings with the top 5 highest number of reviews for the entire dataset.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public async Task<bool> querySortedSubset(string collectionName)
+        /// <param name="repetitions">The amount of times to repeat this query for an average</param>
+        public async Task<bool> querySortedSubset(string collectionName, int repetitions)
         {
-            string queryName = "Query 2 - Sorted Subset";
+            string queryName = $"Query 2 - Sorted Subset - {this._driverKey} - repetitions: {repetitions}";
             FileInfo file = null;
+            string functionName = "querySortedSubset";
+            string outputFilePath = this._driverKey + "/" + functionName + ".txt";
             DateTime start;
+            TimeSpan queryRunTime = TimeSpan.Zero;
 
             // Prepare the external file to store this query's output
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            if (!prepareQueryOutput(outputFilePath, ref file))
                 return false;
 
             // Open external file (clearing previous content if necessary)
             // Record start/end time metrics, query results to file
-            using (StreamWriter fout = new StreamWriter(file.FullName))
-            {
-                start = this._startQueryMetrics(queryName, fout);
+            StreamWriter fout = new StreamWriter(file.FullName);
+            start = this._startQueryMetrics(queryName, fout);
 
-                // Run the query
+            // Run the query
+            for (int i = 0; i < repetitions; i++)
+            {
+                start = DateTime.UtcNow;
                 await this._querySortedSubset(this._collections[collectionName], fout);
-                string result = $"Query run time: {DateTime.UtcNow - start}";
-                this._stopQueryMetrics(fout, start);
+                queryRunTime += DateTime.UtcNow - start;
             }
+
+            // Calculate the average for query run time and count
+            queryRunTime /= repetitions;
+
+            // Print results to console and output files
+            string result = $"Query run time: {queryRunTime.Milliseconds} milliseconds";
+
+            // Append query results to file for graphing performance
+            this._stopQueryMetrics(fout, start);
+            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            fout.Close();
             return true;
         }
 
@@ -228,26 +306,39 @@ namespace mongoCluster
         /// For all listings that are classified as a house that have been updated within a week, what percentage of these have a strict cancellation policy?
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public bool querySubsetSearch(string collectionName)
+        /// <param name="repetitions">The amount of times to repeat this query for an average</param>
+        public bool querySubsetSearch(string collectionName, int repetitions)
         {
-            string queryName = "Query 3 - Subset Search";
+            string queryName = $"Query 3 - Subset Search - {this._driverKey} - repetitions: {repetitions}";
             FileInfo file = null;
+            string functionName = MethodBase.GetCurrentMethod().Name;
+            string outputFilePath = this._driverKey + "/" + functionName + ".txt";
             DateTime start;
+            TimeSpan queryRunTime = TimeSpan.Zero;
 
             // Prepare the external file to store this query's output
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            if (!prepareQueryOutput(outputFilePath, ref file))
                 return false;
 
             // Open external file (clearing previous content if necessary)
             // Record start/end time metrics, query results to file
-            using (StreamWriter fout = new StreamWriter(file.FullName))
-            {
-                start = this._startQueryMetrics(queryName, fout);
+            StreamWriter fout = new StreamWriter(file.FullName);
+            start = this._startQueryMetrics(queryName, fout);
 
-                // Run the query
+            // Run the query
+            for (int i = 0; i < repetitions; i++)
+            {
+                start = DateTime.UtcNow;
                 this._querySubsetSearch(collectionName, fout);
-                this._stopQueryMetrics(fout, start);
+                queryRunTime += DateTime.UtcNow - start;
             }
+
+            // Calculate the average for query run time and count
+            queryRunTime /= repetitions;
+
+            this._stopQueryMetrics(fout, start);
+            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            fout.Close();
             return true;
         }
 
@@ -255,26 +346,38 @@ namespace mongoCluster
         /// Find the average host response rate for listings with a price per night over $1000.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public bool queryAverage(string collectionName)
+        /// <param name="repetitions">The amount of times to repeat this query for an average</param>
+        public bool queryAverage(string collectionName, int repetitions)
         {
-            string queryName = "Query 4 - Average";
+            string queryName = $"Query 4 - Average - {this._driverKey} - repetitions: {repetitions}";
             FileInfo file = null;
+            string functionName = MethodBase.GetCurrentMethod().Name;
+            string outputFilePath = this._driverKey + "/" + functionName + ".txt";
             DateTime start;
+            TimeSpan queryRunTime = TimeSpan.Zero;
 
             // Prepare the external file to store this query's output
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            if (!prepareQueryOutput(outputFilePath, ref file))
                 return false;
 
             // Open external file (clearing previous content if necessary)
             // Record start/end time metrics, query results to file
-            using (StreamWriter fout = new StreamWriter(file.FullName))
-            {
-                start = this._startQueryMetrics(queryName, fout);
+            StreamWriter fout = new StreamWriter(file.FullName);
+            start = this._startQueryMetrics(queryName, fout);
 
-                // Run the query
+            // Run the query
+            for (int i = 0; i < repetitions; i++)
+            {
+                start = DateTime.UtcNow;
                 this._queryAverage(collectionName, fout);
-                this._stopQueryMetrics(fout, start);
+                queryRunTime += DateTime.UtcNow - start;
             }
+            // Calculate the average for query run time and count
+            queryRunTime /= repetitions;
+
+            this._stopQueryMetrics(fout, start);
+            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            fout.Close();
             return true;
         }
 
@@ -283,26 +386,43 @@ namespace mongoCluster
         /// Update all listings that have more than 2 bedrooms and more than 2 bathrooms from Portland to require guest phone verification.
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
-        public bool queryUpdate(string collectionName)
+        /// <param name="repetitions">The amount of times to repeat this query for an average</param>
+        public bool queryUpdate(string collectionName, int repetitions)
         {
-            string queryName = "Query 5 - Update";
+            string queryName = $"Query 5 - Update - {this._driverKey} - repetitions: {repetitions}";
             FileInfo file = null;
+            string functionName = MethodBase.GetCurrentMethod().Name;
+            string outputFilePath = this._driverKey + "/" + functionName + ".txt";
             DateTime start;
+            TimeSpan queryRunTime = TimeSpan.Zero;
 
             // Prepare the external file to store this query's output
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            if (!prepareQueryOutput(outputFilePath, ref file))
                 return false;
 
             // Open external file (clearing previous content if necessary)
             // Record start/end time metrics, query results to file
-            using (StreamWriter fout = new StreamWriter(file.FullName))
-            {
-                start = this._startQueryMetrics(queryName, fout);
+            StreamWriter fout = new StreamWriter(file.FullName);
+            start = this._startQueryMetrics(queryName, fout);
 
-                // Run the query
+            // Run the query
+            for (int i = 0; i < repetitions; i++)
+            {
+                start = DateTime.UtcNow;
                 this._queryUpdate(collectionName, fout);
-                this._stopQueryMetrics(fout, start);
+                queryRunTime += DateTime.UtcNow - start;
             }
+
+            // Calculate the average for query run time and count
+            queryRunTime /= repetitions;
+
+            // Print results to console and output files
+            string result = $"Query run time: {queryRunTime.Milliseconds} milliseconds";
+
+            // Append query results to file for graphing performance
+            this._stopQueryMetrics(fout, start);
+            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            fout.Close();
             return true;
         }
 
@@ -312,61 +432,74 @@ namespace mongoCluster
         /// </summary>
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
-        public bool queryJoin(String firstCollection, String secondCollection)
+        /// <param name="repetitions">The amount of times to repeat this query for an average</param>
+        public bool queryJoin(String firstCollection, String secondCollection, int repetitions)
         {
-            string queryName = "Query 6 - Join";
+            string queryName = $"Query 6 - Join - {this._driverKey} - repetitions: {repetitions}";
             FileInfo file = null;
+            string functionName = MethodBase.GetCurrentMethod().Name;
+            string outputFilePath = this._driverKey + "/" + functionName + ".txt";
             DateTime start;
+            TimeSpan queryRunTime = TimeSpan.Zero;
 
             // Prepare the external file to store this query's output
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            if (!prepareQueryOutput(outputFilePath, ref file))
                 return false;
 
             // Open external file (clearing previous content if necessary)
             // Record start/end time metrics, query results to file
-            using (StreamWriter fout = new StreamWriter(file.FullName))
+            StreamWriter fout = new StreamWriter(file.FullName);
+            start = this._startQueryMetrics(queryName, fout);
+            
+            List<double> resultsArray = new List<double>();
+            List<double> results2Array = new List<double>();
+            for (int i = 0; i < repetitions; i++)
             {
-                List<double> resultsArray = new List<double>();
-                List<double> results2Array = new List<double>();
-                for (int i = 0; i < 5; i++)
-                {
-                    // Run the query without indices       
-                    _deleteAllIndexes(firstCollection);
-                    _deleteAllIndexes(secondCollection);
-                    start = this._startQueryMetrics(queryName, fout);
-                    var result = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); //Result in milliseconds
-                    fout.WriteLine(result);
-                    resultsArray.Add(result); // Add result to the list
-                    this._stopQueryMetrics(fout, start);
+                // Run the query without indices       
+                _deleteAllIndexes(firstCollection);
+                _deleteAllIndexes(secondCollection);
+                var result = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); //Result in milliseconds
+                fout.WriteLine(result);
+                resultsArray.Add(result); // Add result to the list
 
-                    //Run with indices
-                    _createCustomIndex(firstCollection, "id");
-                    _createCustomIndex(secondCollection, "listing_id");
-                    start = this._startQueryMetrics(queryName, fout);
-                    var result2 = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); // Result in milliseconds
-                    fout.WriteLine(result2);
-                    results2Array.Add(result2); // Add result to the list
-                    this._stopQueryMetrics(fout, start);
-                }
-                // Sort and remove smallest and largest query run times for each run (with and without indices)
-                // Print average
-                resultsArray.Sort();
-                resultsArray.RemoveAt(0);
-                resultsArray.RemoveAt(3);
-                Console.WriteLine("Average for non-index join: ");
-                double resultSum = 0, resultCount = 0;
-                foreach (double val in resultsArray) { resultSum += val; resultCount++; }
-                Console.WriteLine(resultSum / resultCount);
-
-                results2Array.Sort();
-                results2Array.RemoveAt(0);
-                results2Array.RemoveAt(3);
-
-                Console.WriteLine("Average for index join:");
-                double result2Sum = 0, result2Count = 0;
-                foreach (double val in results2Array) { result2Sum += val; result2Count++; }
-                Console.WriteLine(result2Sum / result2Count);
+                //Run with indices
+                _createCustomIndex(firstCollection, "id");
+                _createCustomIndex(secondCollection, "listing_id");
+                var result2 = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); // Result in milliseconds
+                fout.WriteLine(result2);
+                results2Array.Add(result2); // Add result to the list
             }
+            this._stopQueryMetrics(fout, start);
+
+            // Sort and remove smallest and largest query run times for each run (with and without indices)
+            // Print average
+            resultsArray.Sort();
+            resultsArray.RemoveAt(0);
+            resultsArray.RemoveAt(3);
+
+            string output = "";
+
+            double resultSum = 0, resultCount = 0, resultAvg = 0;
+            foreach (double val in resultsArray) { resultSum += val; resultCount++; }
+            resultAvg = resultSum / resultCount;
+            output = $"Average for non-index join: {resultAvg}";
+            logger.Info(output);
+            fout.WriteLine(output);
+            Driver._resout.WriteLine(functionName + "," + resultAvg + "," + this._driverKey);
+
+            results2Array.Sort();
+            results2Array.RemoveAt(0);
+            results2Array.RemoveAt(3);
+
+            double result2Sum = 0, result2Count = 0, result2Avg;
+            foreach (double val in results2Array) { result2Sum += val; result2Count++; }
+            result2Avg = result2Sum / result2Count;
+            output = $"Average for index join: {result2Avg}";
+            logger.Info(output);
+            fout.WriteLine(output);
+            Driver._resout.WriteLine(functionName + "Indexed," + result2Avg + "," + this._driverKey);
+            
+            fout.Close();
             return true;
         }
 
@@ -376,35 +509,46 @@ namespace mongoCluster
         /// </summary>
         /// <param name="firstCollection">String representing one collection</param>
         /// <param name="secondCollection">String representing a second collection</param>
-        public bool queryFrequentTraveller(String firstCollection, String secondCollection)
+        /// <param name="repetitions">The amount of times to repeat this query for an average</param>
+        public bool queryFrequentTraveller(String firstCollection, String secondCollection, int repetitions)
         {
             string queryName = "Query 7 - Another join";
-            long count = -1;
+            long queryCount = 0;
             FileInfo file = null;
+            string functionName = MethodBase.GetCurrentMethod().Name;
+            string outputFilePath = this._driverKey + "/" + functionName + ".txt";
             DateTime start;
+            TimeSpan queryRunTime = TimeSpan.Zero;
 
             // Prepare the external file to store this query's output
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            if (!prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
                 return false;
 
             // Open external file (clearing previous content if necessary)
             // Record start/end time metrics, query results to file
-            using (StreamWriter fout = new StreamWriter(file.FullName))
-            {
-                start = this._startQueryMetrics(queryName, fout);
+            StreamWriter fout = new StreamWriter(file.FullName);
+            start = this._startQueryMetrics(queryName, fout);
 
-                // Run the query
-                count = this._queryFrequentTraveller(this._collections[firstCollection], secondCollection, fout);
-                if (count < 0)
-                {
-                    this._stopQueryMetrics(fout, start);
-                    return false;
-                }
-                this._stopQueryMetrics(fout, start);
-                String result = $"Returned {count} documents!";
-                logger.Info(result);
-                fout.WriteLine(result);
+            // Run the query
+            for (int i = 0; i < repetitions; i++)
+            {
+                start = DateTime.UtcNow;
+                queryCount += this._queryFrequentTraveller(this._collections[firstCollection], secondCollection, fout);
+                queryRunTime += DateTime.UtcNow - start;
             }
+
+            // Calculate the average for query run time and count
+            queryRunTime /= repetitions;
+            queryCount /= repetitions;
+
+            this._stopQueryMetrics(fout, start);
+            String result = $"Returned {queryCount} documents!";
+            logger.Info(result);
+            fout.WriteLine(result);
+            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            fout.Close();
+            if (queryCount < 0)
+                return false;
             return true;
         }
         private bool _deleteAllIndexes(string currCollection)
@@ -776,16 +920,14 @@ namespace mongoCluster
 
             // Prepare the external file to store this query's output
             System.IO.FileInfo file = null;
-            if (!_prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
+            if (!prepareQueryOutput(MethodBase.GetCurrentMethod().Name, ref file))
                 return 0;
 
             // Open external file for storing query output, clears out previous text
 
-            String output;
+            String output = "";
             DateTime start;
 
-            Console.WriteLine('\n' + new string('-', 100) + '\n');
-            output = "Query 5 - Join";
             start = DateTime.UtcNow;
             var aggregate = firstCollection.Aggregate().Match(new BsonDocument("city", "Portland")).Match(new BsonDocument("bedrooms", new BsonDocument("$gt", 3)))
                 .Match(new BsonDocument("property_type", "House"))
@@ -861,8 +1003,11 @@ namespace mongoCluster
         private DateTime _startQueryMetrics(string queryName, StreamWriter fout)
         {
             Console.WriteLine('\n' + new string('-', 100) + '\n');
+            logger.Info(queryName);
             fout.WriteLine(queryName);
+
             DateTime now = DateTime.UtcNow;
+            logger.Info($"Query began at: {now}");
             fout.WriteLine($"Query began at: {now}");
             return now;
         }
@@ -873,16 +1018,19 @@ namespace mongoCluster
         private void _stopQueryMetrics(StreamWriter fout, DateTime start)
         {
             DateTime stop = DateTime.UtcNow;
-            string output = $"\nQuery run time: {stop - start}";
-            logger.Info($"{output}");
-            fout.Write($"Query ended at: {stop}");
-            fout.Write(output);
+            string output = $"Query ended at: {stop}";
+            logger.Info(output);
+            fout.WriteLine(output);
+
+            output = $"Query run time: {stop - start}";
+            logger.Info(output);
+            fout.WriteLine(output);
         }
 
         /// <summary>Appends a path segment to the current working directory</summary>
         /// <param name="pathName">The path segment to append</param>
         /// <returns>An absolute address to the cwd's + passed-in path segment</returns>
-        private string _getOutputPath(string pathName)
+        private static string _getOutputPath(string pathName)
         {
             // The project root folder, "mongoCluster", is  ~/bin/Debug/netcoreapp3.0/<assemblyExecutable.exe
             return Path.Combine(
@@ -891,7 +1039,7 @@ namespace mongoCluster
                         "../../..")
                    , @pathName);
         }
-        private bool _createFile(ref FileInfo filePath)
+        private static bool _createFile(ref FileInfo filePath)
         {
             try
             {
@@ -912,17 +1060,17 @@ namespace mongoCluster
 
         /// <summary>Creates the directories and file for storing query output to an external file.</summary>
         /// <param name="file">A reference to the file path to create</param>
-        /// <param name="functionName">The function name to store</param>
+        /// <param name="filePath">The path to file to store the query output</param>
         /// <returns>True if created file, False, otherwise</returns>
-        private bool _prepareQueryOutput(string functionName, ref FileInfo file)
+        public static bool prepareQueryOutput(string filePath, ref FileInfo file)
         {
             // Create the absolute path to the output .txt file for this query
-            string fileName = functionName + ".txt";
-            string filePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
-            file = new FileInfo(_getOutputPath(filePath));
+            string fileName = filePath;
+            string fullFilePath = _getOutputPath(Path.Combine(_outputFolder, fileName));
+            file = new FileInfo(_getOutputPath(fullFilePath));
 
             // Create the directories for the output path if they do not already exist
-            return this._createFile(ref file);
+            return _createFile(ref file);
         }
 
         /// <summary>
@@ -953,7 +1101,7 @@ namespace mongoCluster
             return createIndex;
         }
 
-        /// <summary>List a collections available indexes</summary>
+        /// <summary>List a collection's available indexes</summary>
         /// <param name="collection">The collection containing the reviews</param>
         /// <returns>Default true for listing indexes</returns>
         private async Task<string> _listIndexes(IMongoCollection<BsonDocument> collection)
