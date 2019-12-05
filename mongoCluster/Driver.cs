@@ -251,7 +251,7 @@ namespace mongoCluster
             fout.WriteLine(output);
 
             // Append query runtime to file for graphing performance
-            Driver._resout.WriteLine(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            Driver._resout.WriteLine("Query 1," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
             fout.Close();
             return true;
         }
@@ -296,7 +296,7 @@ namespace mongoCluster
 
             // Append query results to file for graphing performance
             this._stopQueryMetrics(fout, start);
-            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            Driver._resout.WriteLineAsync("Query 2," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
             fout.Close();
             return true;
         }
@@ -337,7 +337,7 @@ namespace mongoCluster
             queryRunTime /= repetitions;
 
             this._stopQueryMetrics(fout, start);
-            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            Driver._resout.WriteLineAsync("Query 3," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
             fout.Close();
             return true;
         }
@@ -376,7 +376,7 @@ namespace mongoCluster
             queryRunTime /= repetitions;
 
             this._stopQueryMetrics(fout, start);
-            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            Driver._resout.WriteLineAsync("Query 4," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
             fout.Close();
             return true;
         }
@@ -421,7 +421,7 @@ namespace mongoCluster
 
             // Append query results to file for graphing performance
             this._stopQueryMetrics(fout, start);
-            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            Driver._resout.WriteLineAsync("Query 5," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
             fout.Close();
             return true;
         }
@@ -456,15 +456,20 @@ namespace mongoCluster
             for (int i = 0; i < repetitions; i++)
             {
                 // Run the query without indices       
-                _deleteAllIndexes(firstCollection);
-                _deleteAllIndexes(secondCollection);
+                if(!_deleteAllIndexes(firstCollection))
+                    logger.Error($"Failed to remove indexes from {firstCollection}");
+                if(!_deleteAllIndexes(secondCollection))
+                    logger.Error($"Failed to remove indexes from {firstCollection}");
+
                 var result = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); //Result in milliseconds
                 fout.WriteLine(result);
                 resultsArray.Add(result); // Add result to the list
 
                 //Run with indices
-                _createCustomIndex(firstCollection, "id");
-                _createCustomIndex(secondCollection, "listing_id");
+                if (!_createCustomIndex(firstCollection, "id"))
+                    logger.Error($"Failed to create an index on 'id' for collection '{firstCollection}'");
+                if (!_createCustomIndex(secondCollection, "listing_id"))
+                    logger.Error($"Failed to create an index on 'listing_id' for collection '{secondCollection}'");
                 var result2 = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); // Result in milliseconds
                 fout.WriteLine(result2);
                 results2Array.Add(result2); // Add result to the list
@@ -485,7 +490,7 @@ namespace mongoCluster
             output = $"Average for non-index join: {resultAvg}";
             logger.Info(output);
             fout.WriteLine(output);
-            Driver._resout.WriteLine(functionName + "," + resultAvg + "," + this._driverKey);
+            Driver._resout.WriteLine("Query 6," + resultAvg + "," + this._driverKey);
 
             results2Array.Sort();
             results2Array.RemoveAt(0);
@@ -497,7 +502,7 @@ namespace mongoCluster
             output = $"Average for index join: {result2Avg}";
             logger.Info(output);
             fout.WriteLine(output);
-            Driver._resout.WriteLine(functionName + "Indexed," + result2Avg + "," + this._driverKey);
+            Driver._resout.WriteLine("Query 6 Index," + result2Avg + "," + this._driverKey);
             
             fout.Close();
             return true;
@@ -545,7 +550,7 @@ namespace mongoCluster
             String result = $"Returned {queryCount} documents!";
             logger.Info(result);
             fout.WriteLine(result);
-            Driver._resout.WriteLineAsync(functionName + "," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            Driver._resout.WriteLineAsync("Query 7," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
             fout.Close();
             if (queryCount < 0)
                 return false;
