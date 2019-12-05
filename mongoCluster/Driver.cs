@@ -272,7 +272,7 @@ namespace mongoCluster
                 start = this._startQueryMetrics(queryName, fout);
 
                 // Run the query
-                this._queryAverage(collectionName, fout);
+                this._queryAverage(this._collections[collectionName], 1000, fout);
                 this._stopQueryMetrics(fout, start);
             }
             return true;
@@ -731,13 +731,35 @@ namespace mongoCluster
         /// </summary>
         /// <param name="collectionName">String representing the collection</param>
         /// <param name="fout">StreamWriter stream for for writing out query results</param>
-        private bool _queryAverage(string collectionName, StreamWriter fout)
+        private bool _queryAverage(IMongoCollection<BsonDocument> collection, int price, StreamWriter fout)
         {
             /*  Implementation Strategy:
             *      1. Perform a filter to find listings with price greater than $1000 ($gt)
             *      2. Perform an average aggregation for the average host_response_rate
             */
             // TODO: stub
+            var match = new BsonDocument
+            {{
+                "$match", new BsonDocument
+                {{
+                        "price", new BsonDocument{
+                            {"$gt", price} 
+                        }
+                }}
+            }};
+
+            var group = new BsonDocument
+            {{
+                    "$group", new BsonDocument
+                    {
+                        {"_id", BsonNull.Value},
+                        {"avg", new BsonDocument{{"$avg", "host_response_rate"}} }
+                    }
+            }};
+            var pipeline = new BsonDocument[] { match, group};
+            var result = collection.Aggregate<BsonDocument>(pipeline).Single();
+            Console.WriteLine(pipeline.ToJson());
+            Console.WriteLine("Average response time for Airbnbs over {0}: \n{1}", price, result.ToJson());
             return false;
         }
 
