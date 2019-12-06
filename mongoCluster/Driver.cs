@@ -844,7 +844,7 @@ namespace mongoCluster
 
             // Run the query
             await collection.Find(filter)
-                            .SortByDescending(x => x[indexToCreate])
+                            .SortByDescending(x => x[indexToCreate]) //largest reviews
                             .Limit(5)
                             .ForEachAsync(doc =>
                             {
