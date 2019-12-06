@@ -58,12 +58,6 @@ namespace mongoCluster
                     logger.Info($"There are {totalListings} totalListings");
                 }
 
-                // Query 4: Average
-                if (!driver.queryAverage(_listings))
-                {
-                    logger.Error("Error: Query4: Average query failed");
-                }
-
                 /*
                 // Run a test query
                 if (!driver.queryTest(_listings)) {
@@ -85,8 +79,12 @@ namespace mongoCluster
                 if (!driver.querySubsetSearch(_listings)) {
                     logger.Error("Error: Query3: Subset search query failed");
                 }
-
-
+                
+                // Query 4: Average
+                if (!driver.queryAverage(_listings))
+                {
+                    logger.Error("Error: Query4: Average query failed");
+                }
 
                 // Query 5: Update
                 if (!driver.queryUpdate(_listings)) {
