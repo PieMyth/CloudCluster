@@ -1,0 +1,13 @@
+﻿cloud_platforms,benchmark_seconds,test
+Query 1,10.2,1
+Query 1,53.877,2
+Query 2,1.3278,1
+Query 2,1.4,2
+Query 3,101.99,1
+Query 3,100.2,2
+Query 4,72.31,1
+Query 4,89.43,2
+Query 5,102.3423,1
+Query 5,211.1234,2
+Query 6,692.6666,1
+Query 6,322.1234,2

@@ -20,99 +20,134 @@ namespace mongoCluster.Tests
         }
 
         [Theory]
-        [InlineData("invalidConnection")]
-        public void establishConnectionTest_connectionFailsAndThrows(string invalidConnection)
+        [InlineData("invalidKey", "invalidConnection")]
+        public void establishConnectionTest_connectionFailsAndThrows(string invalidKey, string invalidConnection)
         {
-            Driver driver = new Driver();
-            driver.Connection = invalidConnection;
+            Driver driver = new Driver(invalidKey, invalidConnection);
             Assert.Throws<UnauthorizedAccessException>(() => driver.establishConnection());
         }
 
-        [Fact]
-        public void establishConnectionTest_connectionSuccessfullyEstablished()
+        [Theory]
+        [InlineData("AWS")]
+        [InlineData("GCP")]
+        [InlineData("Azure")]
+        public void establishConnectionTest_connectionSuccessfullyEstablished(string validKey)
         {
-
-            Driver driver = new Driver();
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             Assert.True(driver.establishConnection());
         }
 
-        [Fact]
-        public void getDatabaseTest_databaseSuccessfulyConnected()
+        [Theory]
+        [InlineData("AWS")]
+        [InlineData("GCP")]
+        [InlineData("Azure")]
+        public void getDatabaseTest_databaseSuccessfulyConnected(string validKey)
         {
-
-            Driver driver = new Driver();
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             driver.establishConnection();
             Assert.True(driver.getDatabase());
         }
 
         [Theory]
-        [InlineData(_listings)]
-        [InlineData(_reviews)]
-        public void collectionExistsTest_returnsTrue(String validCollection)
+        [InlineData(_listings, "AWS")]
+        [InlineData(_reviews, "AWS")]
+        [InlineData(_listings, "GCP")]
+        [InlineData(_reviews, "GCP")]
+        [InlineData(_listings, "Azure")]
+        [InlineData(_reviews, "Azure")]
+        public void collectionExistsTest_returnsTrue(String validCollection, string validKey)
         {
-            Driver driver = new Driver();
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             driver.establishConnection();
             driver.getDatabase();
             Assert.True(driver.collectionExists(validCollection));
         }
 
         [Theory]
-        [InlineData(_listings)]
-        [InlineData(_reviews)]
-        public void getCollectionTest_collectionSuccessfullyConnected(String validCollection)
+        [InlineData(_listings, "AWS")]
+        [InlineData(_reviews, "AWS")]
+        [InlineData(_listings, "GCP")]
+        [InlineData(_reviews, "GCP")]
+        [InlineData(_listings, "Azure")]
+        [InlineData(_reviews, "Azure")]
+        public void getCollectionTest_collectionSuccessfullyConnected(String validCollection, string validKey)
         {
-            Driver driver = new Driver();
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             driver.establishConnection();
             driver.getDatabase();
             Assert.True(driver.getCollection(validCollection));
         }
 
         [Theory]
-        [InlineData("invalidName")]
-        [InlineData("")]
-        public void collectionExistsTest_invalidValueReturnsFalse(String invalidCollection)
+        [InlineData("invalidName", "AWS")]
+        [InlineData("", "AWS")]
+        [InlineData("invalidName", "GCP")]
+        [InlineData("", "GCP")]
+        [InlineData("invalidName", "Azure")]
+        [InlineData("", "Azure")]
+        public void collectionExistsTest_invalidValueReturnsFalse(String invalidCollection, string validKey)
         {
-            Driver driver = new Driver();
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             driver.establishConnection();
             driver.getDatabase();
             Assert.False(driver.collectionExists(invalidCollection));
         }
 
         [Theory]
-        [InlineData(null)]
-        public void collectionExistsTest_nullValueThrowsException(String nullValue)
+        [InlineData(null, "AWS")]
+        [InlineData(null, "GCP")]
+        [InlineData(null, "Azure")]
+        public void collectionExistsTest_nullValueThrowsException(String nullValue, string validKey)
         {
-            Driver driver = new Driver();
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             driver.establishConnection();
             driver.getDatabase();
             Assert.Throws<ArgumentNullException>(() => driver.collectionExists(nullValue));
         }
 
         [Theory]
-        [InlineData("")]
-        [InlineData("invalidName")]
-        public void getCollectionTest_invalidNameConnectionFails(String invalidCollection)
+        [InlineData("", "AWS")]
+        [InlineData("invalidName", "AWS")]
+        [InlineData("", "GCP")]
+        [InlineData("invalidName", "GCP")]
+        [InlineData("", "Azure")]
+        [InlineData("invalidName", "Azure")]
+        public void getCollectionTest_invalidNameConnectionFails(String invalidCollection, string validKey)
         {
-            Driver driver = new Driver();
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             driver.establishConnection();
             driver.getDatabase();
             Assert.False(driver.getCollection(invalidCollection));
         }
 
         [Theory]
-        [InlineData(null)]
-        public void getCollectionTest_nullvalueConnectionFails(String nullValue)
+        [InlineData(null, "AWS")]
+        [InlineData(null, "GCP")]
+        [InlineData(null, "Azure")]
+        public void getCollectionTest_nullvalueConnectionFails(String nullValue, string validKey)
         {
-            Driver driver = new Driver();
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             driver.establishConnection();
             driver.getDatabase();
             Assert.Throws<ArgumentNullException>(() => driver.getCollection(nullValue));
         }
 
-        [Fact]
-        public void queryCountDocumentsTest_countGreaterThanFiveThousand()
-        { 
-            Driver driver = new Driver();
+        [Theory]
+        [InlineData("AWS")]
+        [InlineData("GCP")]
+        [InlineData("Azure")]
+        public void queryCountDocumentsTest_countGreaterThanFiveThousand(string validKey)
+        {
+            string connectionString = ConfigurationManager.AppSettings.Get(validKey);
+            Driver driver = new Driver(validKey, connectionString);
             driver.establishConnection();
             driver.getDatabase();
             driver.getCollection(_listings);

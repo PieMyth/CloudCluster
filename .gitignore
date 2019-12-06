@@ -12,6 +12,11 @@ Dataset/
 dataset.zip
 *.config
 
+# Pycharm/python files
+.idea/
+__pycache__/
+
+
 # build
 [Dd]ebug/
 [Rr]elease/
