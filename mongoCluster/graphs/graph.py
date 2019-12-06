@@ -23,12 +23,13 @@ def barplot(filename: str, x_label: str, y_label: str, img_title: str, pairs: [s
     sns.set(style='whitegrid')
     df = pd.read_csv(file_path)
     sns.set_palette(sns.color_palette(pairs))
-    ax = sns.catplot(x='cloud_platforms',
-                     y='benchmark_seconds',
-                     hue='test',
+    ax = sns.catplot(x='query',
+                     y='benchmark_ms',
+                     hue='Platforms',
                      kind='bar',
                      data=df,
-                     legend=False)
+                     legend=True,
+                     legend_out=True)
 
     ax.set(xlabel=x_label, ylabel=y_label)
 
@@ -40,5 +41,6 @@ def barplot(filename: str, x_label: str, y_label: str, img_title: str, pairs: [s
 
 
 if __name__ == '__main__':
-    barplot(CFG.DATA_FILE, CFG.X_LABEL, CFG.Y_LABEL, CFG.GRAPH_PNG, CFG.BLUE_GREEN)
+    for data in CFG.DATA_FILES:
+        barplot(data + '.csv', CFG.X_AXIS, CFG.Y_AXIS, data + '.png', CFG.COLORS)
     print('\nDone!')
