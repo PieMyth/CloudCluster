@@ -370,7 +370,7 @@ namespace mongoCluster
             for (int i = 0; i < repetitions; i++)
             {
                 start = DateTime.UtcNow;
-                this._queryAverage(collectionName, fout);
+                this._queryAverage(this.Collections[collectionName], 1000, fout);
                 queryRunTime += DateTime.UtcNow - start;
             }
             // Calculate the average for query run time and count
@@ -887,7 +887,8 @@ namespace mongoCluster
             *      1. Perform a filter to find listings with price greater than $1000 ($gt)
             *      2. Perform an average aggregation for the average host_response_rate
             */
-            // TODO: stub
+            //Create the match filter
+            //Host response rate is greater than or equal to 0 so null values are not added to average
             var match = new BsonDocument
             {{
                 "$match", new BsonDocument
@@ -903,6 +904,8 @@ namespace mongoCluster
                 }
             }};
 
+            //Creating the "grouping" used to average out a field
+            //The _id field is set to null, this makes it so it includes all documents into one single group
             var group = new BsonDocument
             {{
                     "$group", new BsonDocument
@@ -912,8 +915,10 @@ namespace mongoCluster
                     }
             }};
             var pipeline = new BsonDocument[] { match, group};
+            //Preform the Aggregation and ensure only one document is returned.
             var result = collection.Aggregate<BsonDocument>(pipeline).Single();
-            Console.WriteLine("Average response time for Airbnbs over {0}: {1}", price, result["avg"]);
+            //Output the result
+            Console.WriteLine("Average response percentage for Airbnbs over {0}: {1}", price, result["avg"]);
             return false;
         }
 
