@@ -50,7 +50,7 @@ namespace mongoCluster
 
                 Driver driver = new Driver(connection, connectionString);
                 drivers[connection] = driver;
-
+              
                 if (!connect(ref driver))
                 {
                     logger.Fatal("Driver failed to connect to database. Exiting Program.");
