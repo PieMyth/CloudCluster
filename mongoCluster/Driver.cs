@@ -844,6 +844,7 @@ namespace mongoCluster
 
             // Run the query
             await collection.Find(filter)
+                            .SortByDescending(x => x[indexToCreate])
                             .Limit(5)
                             .ForEachAsync(doc =>
                             {
@@ -871,7 +872,65 @@ namespace mongoCluster
             *      4. Perform a grouping on the filtered set to group on the cancellation_policy and count using $group and $sum. 
             *         This can then be formatted to get this count divided by the total number of documents to gather a percentage
             */
-            // TODO: stub
+
+            //All >1 week calendar_updated listings do not have today/yesterday and days keywords  
+            var match1 = new BsonDocument
+            {
+                {
+                    "$match", new BsonDocument
+                    {
+                        {
+                            "property_type", new BsonRegularExpression("/House/i")
+                        },
+                        {
+                            "calendar_updated", new BsonRegularExpression("/today|yesterday|days/i")
+                        }
+                    }
+                }
+            };
+
+            //strict listings
+            var match2 = new BsonDocument
+            {
+                {
+                    "$match", new BsonDocument
+                    {
+                        {
+                            "cancellation_policy", new BsonRegularExpression("/strict/gi")
+                        }
+                    }
+                }
+            };
+
+            //reduce size of results
+            var project = new BsonDocument
+            {
+                {
+                    "$project", new BsonDocument
+                    {
+                        {
+                            "property_type", 1
+                        },
+                        {
+                            "calendar_updated", 1
+                        }
+                    }
+                }
+            };
+
+            float unstrict = this._collections[collectionName]
+                .Aggregate<BsonDocument>(new BsonDocument[] { match1, project })
+                .ToList()
+                .Count;
+
+            float strict = this._collections[collectionName]
+                .Aggregate<BsonDocument>(new BsonDocument[] { match1, match2, project })
+                .ToList()
+                .Count;
+
+            string result_desc = $"The percentage of listings with a strict cancellation policy is { (strict / unstrict) * 100 }%";
+            fout.WriteLineAsync(result_desc);
+            logger.Info(result_desc);
             return false;
         }
 
@@ -934,7 +993,6 @@ namespace mongoCluster
             *      1. Perform an updateMany on all listings from Portland 
             *         with greater than 2 bedrooms and 2 bathrooms to set the require_guest_phone_verification field as true. 
             */
-            // TODO: stub
             return false;
         }
 
