@@ -117,10 +117,12 @@ namespace mongoCluster
                         logger.Error("Error: Query4: Average query failed");
                     }
 
+                    /*
                     // Query 5: Update
                     if (!driver.queryUpdate(_listings, 10)) {
                         logger.Error("Error: Query5: Update query failed");
                     }
+                    */
                     /**/
 
                 } // End queries specific to the listings collection

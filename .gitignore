@@ -11,6 +11,7 @@ Dataset/
 [Dd]ataset/
 dataset.zip
 *.config
+*.DS_Store
 
 # Pycharm/python files
 .idea/
