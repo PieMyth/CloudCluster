@@ -27,7 +27,7 @@ namespace mongoCluster
         private const string _resultFileHeaders = "query,benchmark_milliseconds,cloud_platform";
 
         // Writer to the result file
-        public static StreamWriter _resout;
+        private static StreamWriter _resout;
 
         // Atlas cluster connection string
         private string _connection;
@@ -299,6 +299,21 @@ namespace mongoCluster
             // Append query results to file for graphing performance
             this._stopQueryMetrics(fout, start);
             Driver._resout.WriteLineAsync("Query 2," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+
+            // Cleanup
+            string output = "";
+            if (!_deleteAllIndexes(collectionName))
+            {
+                output = $"Failed to remove indexes from {collectionName}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {collectionName}";
+                logger.Info(output);
+                fout.Write(output);
+            }
             fout.Close();
             return true;
         }
@@ -369,7 +384,21 @@ namespace mongoCluster
             start = this._startQueryMetrics(queryName, fout);
 
 
-            // Run the query
+            // Run the query without indexes
+            string output = "";
+            if (!_deleteAllIndexes(collectionName))
+            {
+                output = $"Failed to remove indexes from {collectionName}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {collectionName}";
+                logger.Info(output);
+                fout.Write(output);
+            }
+
             for (int i = 0; i < repetitions; i++)
             {
                 logger.Info($"Repetition {i + 1}/{repetitions}");
@@ -382,6 +411,20 @@ namespace mongoCluster
 
             this._stopQueryMetrics(fout, start);
             Driver._resout.WriteLineAsync("Query 4," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+
+            // Clean up
+            if (!_deleteAllIndexes(collectionName))
+            {
+                output = $"Failed to remove indexes from {collectionName}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {collectionName}";
+                logger.Info(output);
+                fout.Write(output);
+            }
             fout.Close();
             return true;
         }
@@ -459,28 +502,65 @@ namespace mongoCluster
             
             List<double> resultsArray = new List<double>();
             List<double> results2Array = new List<double>();
-            // Run the query without indices       
-            if(!_deleteAllIndexes(firstCollection))
-                logger.Error($"Failed to remove indexes from {firstCollection}");
-            if(!_deleteAllIndexes(secondCollection))
-                logger.Error($"Failed to remove indexes from {firstCollection}");
+            // Run the query without indices      
+            string output = "";
+            if (!_deleteAllIndexes(firstCollection))
+            {
+                output = $"Failed to remove indexes from {firstCollection}";
+                logger.Error(output);
+                fout.Write(output);
+            } else
+            {
+                output = $"Removed all indexes from {firstCollection}";
+                logger.Info(output);
+                fout.Write(output);
+            }
+            if (!_deleteAllIndexes(secondCollection))
+            {
+                output=$"Failed to remove indexes from {secondCollection}";
+                logger.Error(output);
+                fout.Write(output);
+            } else
+            {
+                output = $"Removed all indexes from {secondCollection}";
+                logger.Info(output);
+                fout.Write(output);
+            }
             for (int i = 0; i < repetitions; i++)
             {
-                logger.Info($"Repetition {i+1}/{repetitions}");
                 var result = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); //Result in milliseconds
+                logger.Info($"Repetition {i + 1}/{repetitions}");
                 fout.WriteLine(result);
                 resultsArray.Add(result); // Add result to the list
             }
 
             //Run with indices
             if (!_createCustomIndex(firstCollection, "id"))
-                logger.Error($"Failed to create an index on 'id' for collection '{firstCollection}'");
+            {
+                output = $"Failed to create an index on 'id' for collection '{firstCollection}'";
+                logger.Error(output);
+                fout.Write(output);
+            } else
+            {
+                output = $"Created an index on 'id' for collection '{firstCollection}'";
+                logger.Info(output);
+                fout.Write(output);
+            }
             if (!_createCustomIndex(secondCollection, "listing_id"))
-                logger.Error($"Failed to create an index on 'listing_id' for collection '{secondCollection}'");
+            {
+                output = $"Failed to create an index on 'listing_id' for collection '{secondCollection}'";
+                logger.Error(output);
+                fout.Write(output);
+            } else
+            {
+                output = $"Created an index on 'listing_id' for collection '{secondCollection}'";
+                logger.Info(output);
+                fout.Write(output);
+            }
             for (int i = 0; i < repetitions; i++)
             {
-                logger.Info($"Repetition {i + 1}/{repetitions}");
                 var result2 = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); // Result in milliseconds
+                logger.Info($"Repetition {i + 1}/{repetitions}");
                 fout.WriteLine(result2);
                 results2Array.Add(result2); // Add result to the list
             }
@@ -488,11 +568,12 @@ namespace mongoCluster
 
             // Sort and remove smallest and largest query run times for each run (with and without indices)
             // Print average
-            resultsArray.Sort();
-            resultsArray.RemoveAt(0);
-            resultsArray.RemoveAt(3);
-
-            string output = "";
+            if (repetitions > 2)
+            {
+                resultsArray.Sort();
+                resultsArray.RemoveAt(0);
+                resultsArray.RemoveAt(repetitions - 2);
+            }
 
             double resultSum = 0, resultCount = 0, resultAvg = 0;
             foreach (double val in resultsArray) { resultSum += val; resultCount++; }
@@ -502,9 +583,12 @@ namespace mongoCluster
             fout.WriteLine(output);
             Driver._resout.WriteLine("Query 6," + resultAvg + "," + this._driverKey);
 
-            results2Array.Sort();
-            results2Array.RemoveAt(0);
-            results2Array.RemoveAt(3);
+            if (repetitions > 2)
+            {
+                results2Array.Sort();
+                results2Array.RemoveAt(0);
+                results2Array.RemoveAt(repetitions - 2);
+            }
 
             double result2Sum = 0, result2Count = 0, result2Avg;
             foreach (double val in results2Array) { result2Sum += val; result2Count++; }
@@ -513,7 +597,33 @@ namespace mongoCluster
             logger.Info(output);
             fout.WriteLine(output);
             Driver._resout.WriteLine("Query 6 Index," + result2Avg + "," + this._driverKey);
-            
+
+            // Clean up
+            output = "";
+            if (!_deleteAllIndexes(firstCollection))
+            {
+                output = $"Failed to remove indexes from {firstCollection}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {firstCollection}";
+                logger.Info(output);
+                fout.Write(output);
+            }
+            if (!_deleteAllIndexes(secondCollection))
+            {
+                output = $"Failed to remove indexes from {secondCollection}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {secondCollection}";
+                logger.Info(output);
+                fout.Write(output);
+            }
             fout.Close();
             return true;
         }
@@ -528,12 +638,12 @@ namespace mongoCluster
         public bool queryFrequentTraveller(String firstCollection, String secondCollection, int repetitions)
         {
             string queryName = $"Query 7 - Another join - {this._driverKey} - repetitions: {repetitions}";
-            long queryCount = 0;
+            long queryCount = 0, query2Count = 0;
             FileInfo file = null;
             string functionName = MethodBase.GetCurrentMethod().Name;
             string outputFilePath = this._driverKey + "/" + functionName + ".txt";
             DateTime start;
-            TimeSpan queryRunTime = TimeSpan.Zero;
+            TimeSpan queryRunTime = TimeSpan.Zero, query2RunTime = TimeSpan.Zero;
 
             // Prepare the external file to store this query's output
             if (!prepareQueryOutput(outputFilePath, ref file))
@@ -544,7 +654,32 @@ namespace mongoCluster
             StreamWriter fout = new StreamWriter(file.FullName);
             start = this._startQueryMetrics(queryName, fout);
 
-            // Run the query
+            // Run the query without indices       
+            string output = "";
+            if (!_deleteAllIndexes(firstCollection))
+            {
+                output = $"Failed to remove indexes from {firstCollection}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {firstCollection}";
+                logger.Info(output);
+                fout.Write(output);
+            }
+            if (!_deleteAllIndexes(secondCollection))
+            {
+                output = $"Failed to remove indexes from {secondCollection}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {secondCollection}";
+                logger.Info(output);
+                fout.Write(output);
+            }
             for (int i = 0; i < repetitions; i++)
             {
                 start = DateTime.UtcNow;
@@ -552,17 +687,85 @@ namespace mongoCluster
                 queryRunTime += DateTime.UtcNow - start;
             }
 
+            //Run with indices
+            if (!_createCustomIndex(firstCollection, "id"))
+            {
+                output = $"Failed to create an index on 'id' for collection '{firstCollection}'";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Created an index on 'id' for collection '{firstCollection}'";
+                logger.Info(output);
+                fout.Write(output);
+            }
+            if (!_createCustomIndex(secondCollection, "listing_id"))
+            {
+                output = $"Failed to create an index on 'listing_id' for collection '{secondCollection}'";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Created an index on 'listing_id' for collection '{secondCollection}'";
+                logger.Info(output);
+                fout.Write(output);
+            }
+            for (int i = 0; i < repetitions; i++)
+            {
+                start = DateTime.UtcNow;
+                query2Count += this._queryFrequentTraveller(this._collections[firstCollection], secondCollection, fout);
+                query2RunTime += DateTime.UtcNow - start;
+            }
+
             // Calculate the average for query run time and count
             queryRunTime /= repetitions;
             queryCount /= repetitions;
+            query2RunTime /= repetitions;
+            query2Count /= repetitions;
 
             this._stopQueryMetrics(fout, start);
-            String result = $"Returned {queryCount} documents!";
+            String result = $"Without index returned {queryCount} documents!";
             logger.Info(result);
             fout.WriteLine(result);
-            Driver._resout.WriteLineAsync("Query 7," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+
+            result = $"With index returned {query2Count} documents!";
+            logger.Info(result);
+            fout.WriteLine(result);
+
+            // Append results to the resutls .csv file
+            Driver._resout.WriteLine("Query 7," + queryRunTime.TotalMilliseconds + "," + this._driverKey);
+            Driver._resout.WriteLine("Query 7 Index," + query2RunTime.TotalMilliseconds + "," + this._driverKey);
+
+            // Clean up
+            output = "";
+            if (!_deleteAllIndexes(firstCollection))
+            {
+                output = $"Failed to remove indexes from {firstCollection}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {firstCollection}";
+                logger.Info(output);
+                fout.Write(output);
+            }
+            if (!_deleteAllIndexes(secondCollection))
+            {
+                output = $"Failed to remove indexes from {secondCollection}";
+                logger.Error(output);
+                fout.Write(output);
+            }
+            else
+            {
+                output = $"Removed all indexes from {secondCollection}";
+                logger.Info(output);
+                fout.Write(output);
+            }
             fout.Close();
-            if (queryCount < 0)
+            if (queryCount < 0 || query2Count < 0)
                 return false;
             return true;
         }
@@ -893,7 +1096,7 @@ namespace mongoCluster
                     "$match", new BsonDocument
                     {
                         {
-                            "property_type", new BsonRegularExpression("/House/i")
+                            "property_type", "House"
                         },
                         {
                             "calendar_updated", new BsonRegularExpression("/today|yesterday|days/i")
@@ -909,7 +1112,7 @@ namespace mongoCluster
                     "$match", new BsonDocument
                     {
                         {
-                            "cancellation_policy", new BsonRegularExpression("/strict/gi")
+                            "cancellation_policy", new BsonRegularExpression("/strict/")
                         }
                     }
                 }

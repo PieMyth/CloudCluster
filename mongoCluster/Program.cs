@@ -24,6 +24,10 @@ namespace mongoCluster
         // True if deleting all collections before exiting script.
         private const bool deleteAll = false;
 
+        // Amount of times to repeat each query (for getting query runtime averages)
+        private const int repetitions = 25;
+        private const int join_repetitions = 10;
+
         // Main: a Driver instance is created, connected, and queries are run 
         static void Main(string[] args)
         {
@@ -96,34 +100,35 @@ namespace mongoCluster
                         logger.Error("Error: Test query failed");
                     }
                     */
+                    
                     // Query 1: A count query
-                    if (!driver.queryCount(_listings, 25)) {
+                    if (!driver.queryCount(_listings, repetitions)) {
                         logger.Error("Error: Query1: Count query failed");
                     }
                     
                     // Query 2: Sorted Subset
-                    Task<Boolean> resultSortedSubset = driver.querySortedSubset(_listings, 25);
+                    Task<Boolean> resultSortedSubset = driver.querySortedSubset(_listings, repetitions);
 
                     if (!resultSortedSubset.Result)
                         logger.Error("Error: Query2: Sorted subset query failed");
-
+                    
                     // Query 3: Subset-search
-                    if (!driver.querySubsetSearch(_listings, 25)) {
+                    if (!driver.querySubsetSearch(_listings, repetitions)) {
                         logger.Error("Error: Query3: Subset search query failed");
                     }
                     
                     // Query 4: Average
-                    if (!driver.queryAverage(_listings, 25)) {
+                    if (!driver.queryAverage(_listings, repetitions)) {
                         logger.Error("Error: Query4: Average query failed");
                     }
 
                     /*
-                    // Query 5: Update
+                    // Query 5: Update  
                     if (!driver.queryUpdate(_listings, 10)) {
                         logger.Error("Error: Query5: Update query failed");
                     }
                     */
-                    /**/
+                    
 
                 } // End queries specific to the listings collection
 
@@ -131,20 +136,18 @@ namespace mongoCluster
                 // Run queries specific to the reviews collection if a successful connection is established
                 if (driver.getCollection(_reviews))
                 {
-
+                    
                     // Query 6: Join
-                    if (!driver.queryJoin(_listings, _reviews, 25))
+                    if (!driver.queryJoin(_listings, _reviews, join_repetitions))
                     {
                         logger.Error("Error: Query6: Join query failed");
                     }
 
                     // Query 7: Join 2.0, Frequent Traveller
-                    if (!driver.queryFrequentTraveller(_reviews, _listings, 25))
+                    if (!driver.queryFrequentTraveller(_reviews, _listings, join_repetitions))
                     {
                         logger.Error("Error: Query7: Join2.0, Frequent Traveller query failed");
                     }
-                    /**/
-
 
                 } // End queries specific to the reviews collection
 
