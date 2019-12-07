@@ -577,9 +577,11 @@ namespace mongoCluster
             var cur = _collections[currCollection].Indexes.List().ToList();
             for (var i = 0; i < cur.Count; i++)
             {
-                if (cur[i].GetValue("name") == indexName)
+                string indx = cur[i].GetValue("name").ToString();
+                if (indx.StartsWith(indexName))
                 {
                     Console.WriteLine("Index already exists");
+                   
                     return false;
                 }
             }
@@ -592,9 +594,11 @@ namespace mongoCluster
             //Print to see if the index was created
             for (var i = 0; i < cur.Count; i++)
             {
-                if (cur[i].GetValue("name") == indexName)
+                string indx = cur[i].GetValue("name").ToString();
+
+                if (indx.StartsWith(indexName))
                 {
-                    return true;
+                    return true; //index created
                 }
             }
             return false;
@@ -1026,15 +1030,15 @@ namespace mongoCluster
             start = DateTime.UtcNow;
             var aggregate = firstCollection.Aggregate().Match(new BsonDocument("city", "Portland")).Match(new BsonDocument("bedrooms", new BsonDocument("$gt", 3)))
                 .Match(new BsonDocument("property_type", "House"))
-                .Lookup("reviews", "id", "listing_id", "result").Unwind(x => x["result"]).
-                Group(BsonDocument.Parse("{'_id': '$id', 'host_name': {$first: '$host_name'}, 'result': {$first: '$result'}}"))
+                .Lookup("reviews", "id", "listing_id", "result").Unwind(x => x["result"])
+                .Sort(new BsonDocument("result.date",-1))
+                .Group(BsonDocument.Parse("{'_id': '$id', 'host_name': {$first: '$host_name'}, 'result': {$first: '$result'}}"))
                 .ToList();
+
             output += $"\nQuery run time: {DateTime.UtcNow - start}";
             var resultsCount = aggregate.Count;
             output += $"\nNumber of listings with their most recent review = {resultsCount} \n";
-            //logger.Info(output);
-            // fout.WriteLine(output);
-
+    
             var runTime = DateTime.UtcNow - start;
             return runTime.Ticks / TimeSpan.TicksPerMillisecond;
         }
