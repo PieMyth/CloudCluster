@@ -1,0 +1,5 @@
+Query 4 - Average - Azure - repetitions: 25
+Query began at: 12/7/2019 6:25:50 PM
+Removed all indexes from listingsQuery ended at: 12/7/2019 6:25:56 PM
+Query run time: 00:00:00.2368613
+Removed all indexes from listings

@@ -1,0 +1,5 @@
+Query 2 - Sorted Subset - AWS - repetitions: 25
+Query began at: 12/7/2019 6:19:22 PM
+Query ended at: 12/7/2019 6:19:26 PM
+Query run time: 00:00:00.0997161
+Removed all indexes from listings

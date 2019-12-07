@@ -1,0 +1,27 @@
+Query 6 - Join - AWS - repetitions: 10
+Query began at: 12/7/2019 6:19:54 PM
+Removed all indexes from listingsRemoved all indexes from reviews23927
+23363
+23485
+23310
+23049
+24797
+22951
+23798
+23421
+22961
+Created an index on 'id' for collection 'listings'Created an index on 'listing_id' for collection 'reviews'415
+285
+280
+272
+272
+271
+278
+278
+283
+273
+Query ended at: 12/7/2019 6:23:54 PM
+Query run time: 00:04:00.1706992
+Average for non-index join: 23414.25
+Average for index join: 277.625
+Removed all indexes from listingsRemoved all indexes from reviews

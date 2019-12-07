@@ -1,0 +1,29 @@
+Query 3 - Subset Search - AWS - repetitions: 25
+Query began at: 12/7/2019 6:19:26 PM
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+Query ended at: 12/7/2019 6:19:49 PM
+Query run time: 00:00:00.7659254

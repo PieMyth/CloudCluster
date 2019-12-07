@@ -1,0 +1,5 @@
+Query 2 - Sorted Subset - GCP - repetitions: 25
+Query began at: 12/7/2019 6:11:32 PM
+Query ended at: 12/7/2019 6:11:36 PM
+Query run time: 00:00:00.0718718
+Removed all indexes from listings

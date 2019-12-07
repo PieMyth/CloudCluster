@@ -1,0 +1,5 @@
+Query 4 - Average - AWS - repetitions: 25
+Query began at: 12/7/2019 6:19:49 PM
+Removed all indexes from listingsQuery ended at: 12/7/2019 6:19:54 PM
+Query run time: 00:00:00.1836391
+Removed all indexes from listings

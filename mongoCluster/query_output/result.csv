@@ -1,0 +1,25 @@
+query,benchmark_milliseconds,cloud_platform
+Query 1,223.2843,GCP
+Query 2,136.3683,GCP
+Query 3,973.5584,GCP
+Query 4,224.74550000000002,GCP
+Query 6,33395.125,GCP
+Query 6 Index,291.125,GCP
+Query 7,4270.3109,GCP
+Query 7 Index,4195.6085,GCP
+Query 1,174.8163,AWS
+Query 2,138.6788,AWS
+Query 3,905.9674,AWS
+Query 4,186.449,AWS
+Query 6,23414.25,AWS
+Query 6 Index,277.625,AWS
+Query 7,3155.1106,AWS
+Query 7 Index,3116.7419,AWS
+Query 1,224.60600000000002,Azure
+Query 2,191.4563,Azure
+Query 3,1246.2002,Azure
+Query 4,237.1001,Azure
+Query 6,32211.75,Azure
+Query 6 Index,339.625,Azure
+Query 7,3971.7702000000004,Azure
+Query 7 Index,3839.1781,Azure

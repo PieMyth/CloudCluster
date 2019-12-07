@@ -1,0 +1,27 @@
+Query 6 - Join - Azure - repetitions: 10
+Query began at: 12/7/2019 6:25:57 PM
+Removed all indexes from listingsRemoved all indexes from reviews31995
+31767
+31664
+32018
+32242
+32014
+31772
+31613
+34222
+46662
+Created an index on 'id' for collection 'listings'Created an index on 'listing_id' for collection 'reviews'507
+347
+349
+342
+331
+335
+333
+328
+349
+331
+Query ended at: 12/7/2019 6:31:39 PM
+Query run time: 00:05:42.6569708
+Average for non-index join: 32211.75
+Average for index join: 339.625
+Removed all indexes from listingsRemoved all indexes from reviews
