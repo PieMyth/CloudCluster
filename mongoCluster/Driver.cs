@@ -884,7 +884,7 @@ namespace mongoCluster
                     "$match", new BsonDocument
                     {
                         {
-                            "property_type", new BsonRegularExpression("/House/i")
+                            "property_type", "House"
                         },
                         {
                             "calendar_updated", new BsonRegularExpression("/today|yesterday|days/i")
