@@ -1,0 +1,4 @@
+Query 5 - Update - AWS - repetitions: 10
+Query began at: 12/5/2019 10:02:18 PM
+Query ended at: 12/5/2019 10:02:18 PM
+Query run time: 00:00:00.0000311

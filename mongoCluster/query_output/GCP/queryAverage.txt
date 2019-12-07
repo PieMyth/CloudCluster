@@ -1,0 +1,5 @@
+Query 4 - Average - GCP - repetitions: 25
+Query began at: 12/7/2019 6:12:00 PM
+Removed all indexes from listingsQuery ended at: 12/7/2019 6:12:06 PM
+Query run time: 00:00:00.2102582
+Removed all indexes from listings

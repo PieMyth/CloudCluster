@@ -1,0 +1,27 @@
+Query 6 - Join - GCP - repetitions: 10
+Query began at: 12/7/2019 6:12:06 PM
+Removed all indexes from listingsRemoved all indexes from reviews32954
+33615
+32894
+34453
+34697
+34113
+35023
+34233
+30202
+28948
+Created an index on 'id' for collection 'listings'Created an index on 'listing_id' for collection 'reviews'393
+302
+282
+313
+284
+284
+290
+288
+285
+283
+Query ended at: 12/7/2019 6:17:43 PM
+Query run time: 00:05:36.6408071
+Average for non-index join: 33395.125
+Average for index join: 291.125
+Removed all indexes from listingsRemoved all indexes from reviews

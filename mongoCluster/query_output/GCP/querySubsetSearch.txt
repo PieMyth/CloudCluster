@@ -1,0 +1,29 @@
+Query 3 - Subset Search - GCP - repetitions: 25
+Query began at: 12/7/2019 6:11:36 PM
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+The percentage of listings with a strict cancellation policy is 51.84139%
+Query ended at: 12/7/2019 6:12:00 PM
+Query run time: 00:00:00.9669015

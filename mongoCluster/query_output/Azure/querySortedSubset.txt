@@ -1,0 +1,5 @@
+Query 2 - Sorted Subset - Azure - repetitions: 25
+Query began at: 12/7/2019 6:25:14 PM
+Query ended at: 12/7/2019 6:25:19 PM
+Query run time: 00:00:00.1039200
+Removed all indexes from listings

@@ -1,0 +1,5 @@
+Query 1 - Count query - Azure - repetitions: 25
+There are 0 listings with over 2 bedrooms in zipcode range from 97201 - 972010.
+Query run time: 249.2365 milliseconds
+There are 526 listings with over 2 bedrooms in the city of Portland.
+Query run time: 224.60600000000002 milliseconds
