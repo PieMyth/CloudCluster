@@ -97,23 +97,23 @@ namespace mongoCluster
                     }
                     */
                     // Query 1: A count query
-                    if (!driver.queryCount(_listings, 10)) {
+                    if (!driver.queryCount(_listings, 25)) {
                         logger.Error("Error: Query1: Count query failed");
                     }
                     
                     // Query 2: Sorted Subset
-                    Task<Boolean> resultSortedSubset = driver.querySortedSubset(_listings, 10);
+                    Task<Boolean> resultSortedSubset = driver.querySortedSubset(_listings, 25);
 
                     if (!resultSortedSubset.Result)
                         logger.Error("Error: Query2: Sorted subset query failed");
 
                     // Query 3: Subset-search
-                    if (!driver.querySubsetSearch(_listings, 10)) {
+                    if (!driver.querySubsetSearch(_listings, 25)) {
                         logger.Error("Error: Query3: Subset search query failed");
                     }
                     
                     // Query 4: Average
-                    if (!driver.queryAverage(_listings, 10)) {
+                    if (!driver.queryAverage(_listings, 25)) {
                         logger.Error("Error: Query4: Average query failed");
                     }
 
@@ -133,13 +133,13 @@ namespace mongoCluster
                 {
 
                     // Query 6: Join
-                    if (!driver.queryJoin(_listings, _reviews, 5))
+                    if (!driver.queryJoin(_listings, _reviews, 25))
                     {
                         logger.Error("Error: Query6: Join query failed");
                     }
 
                     // Query 7: Join 2.0, Frequent Traveller
-                    if (!driver.queryFrequentTraveller(_reviews, _listings, 5))
+                    if (!driver.queryFrequentTraveller(_reviews, _listings, 25))
                     {
                         logger.Error("Error: Query7: Join2.0, Frequent Traveller query failed");
                     }

@@ -235,6 +235,7 @@ namespace mongoCluster
             // Using city name
             for (int i = 0; i < repetitions; i++)
             {
+                logger.Info($"Repetition {i + 1}/{repetitions}");
                 start = DateTime.UtcNow;
                 queryCount += (this._queryCount(this._collections[collectionName], 2, city_limit: "Portland")).Result;
                 queryRunTime += DateTime.UtcNow - start;
@@ -283,6 +284,7 @@ namespace mongoCluster
             // Run the query
             for (int i = 0; i < repetitions; i++)
             {
+                logger.Info($"Repetition {i + 1}/{repetitions}");
                 start = DateTime.UtcNow;
                 await this._querySortedSubset(this._collections[collectionName], fout);
                 queryRunTime += DateTime.UtcNow - start;
@@ -328,6 +330,7 @@ namespace mongoCluster
             // Run the query
             for (int i = 0; i < repetitions; i++)
             {
+                logger.Info($"Repetition {i + 1}/{repetitions}");
                 start = DateTime.UtcNow;
                 this._querySubsetSearch(collectionName, fout);
                 queryRunTime += DateTime.UtcNow - start;
@@ -369,6 +372,7 @@ namespace mongoCluster
             // Run the query
             for (int i = 0; i < repetitions; i++)
             {
+                logger.Info($"Repetition {i + 1}/{repetitions}");
                 start = DateTime.UtcNow;
                 this._queryAverage(this.Collections[collectionName], 1000, fout);
                 queryRunTime += DateTime.UtcNow - start;
@@ -409,6 +413,7 @@ namespace mongoCluster
             // Run the query
             for (int i = 0; i < repetitions; i++)
             {
+                logger.Info($"Repetition {i + 1}/{repetitions}");
                 start = DateTime.UtcNow;
                 this._queryUpdate(collectionName, fout);
                 queryRunTime += DateTime.UtcNow - start;
@@ -454,23 +459,27 @@ namespace mongoCluster
             
             List<double> resultsArray = new List<double>();
             List<double> results2Array = new List<double>();
+            // Run the query without indices       
+            if(!_deleteAllIndexes(firstCollection))
+                logger.Error($"Failed to remove indexes from {firstCollection}");
+            if(!_deleteAllIndexes(secondCollection))
+                logger.Error($"Failed to remove indexes from {firstCollection}");
             for (int i = 0; i < repetitions; i++)
             {
-                // Run the query without indices       
-                if(!_deleteAllIndexes(firstCollection))
-                    logger.Error($"Failed to remove indexes from {firstCollection}");
-                if(!_deleteAllIndexes(secondCollection))
-                    logger.Error($"Failed to remove indexes from {firstCollection}");
-
+                logger.Info($"Repetition {i+1}/{repetitions}");
                 var result = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); //Result in milliseconds
                 fout.WriteLine(result);
                 resultsArray.Add(result); // Add result to the list
+            }
 
-                //Run with indices
-                if (!_createCustomIndex(firstCollection, "id"))
-                    logger.Error($"Failed to create an index on 'id' for collection '{firstCollection}'");
-                if (!_createCustomIndex(secondCollection, "listing_id"))
-                    logger.Error($"Failed to create an index on 'listing_id' for collection '{secondCollection}'");
+            //Run with indices
+            if (!_createCustomIndex(firstCollection, "id"))
+                logger.Error($"Failed to create an index on 'id' for collection '{firstCollection}'");
+            if (!_createCustomIndex(secondCollection, "listing_id"))
+                logger.Error($"Failed to create an index on 'listing_id' for collection '{secondCollection}'");
+            for (int i = 0; i < repetitions; i++)
+            {
+                logger.Info($"Repetition {i + 1}/{repetitions}");
                 var result2 = this._queryJoin(this._collections[firstCollection], this._collections[secondCollection], fout); // Result in milliseconds
                 fout.WriteLine(result2);
                 results2Array.Add(result2); // Add result to the list
