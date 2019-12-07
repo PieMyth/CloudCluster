@@ -151,14 +151,14 @@ From the first link, 'MongoDB on Compute Engine'...
 <hr/>
 
 ## TODOs
-- Set up Atlas clusters on AWS, GCP, and Azure
 - Use cursors to parse through large query results
-- Set up indexes after importing data
 - Add our report .pdfs onto github
 - Add our presentation onto github
-- Implement at least 4 queries
-- Add code for reporting query performance (ex. python's pychart library)
 
++ [PASS] Set up Atlas clusters on AWS, GCP, and Azure
++ [PASS] Set up indexes after importing data
++ [PASS] Implement at least 4 queries
++ [PASS] Add code for reporting query performance (ex. python's pychart library)
 + [PASS]    Try and catch blocks for queries and db connection attempts
 + [PASS]    Set up tests for TDD?
 + [FAILED]  Utilize .explain() to get query result metadata
@@ -178,8 +178,11 @@ From the first link, 'MongoDB on Compute Engine'...
 - Explore sharding
 - Explore replication & performance penalty during an election
 - Use a service account to connect to the db rather than IP whitelisting
-- **Set up identical clusters on AWS, GCP, Azure and compare performance vs. Altas**
-    - If we figure out the service account, this is very do-able! It would just be a change of connection string.
+
++ [PASS] **Set up identical clusters on AWS, GCP, Azure and compare performance vs. Altas**
+    + [FAILED] If we figure out the service account, this is very do-able! It would just be a change of connection string.
+         - Reason: Service account not needed
+         - Workaround: Create three free-tier Atlas clusters via different acccounts, one cluster for each service provider
 <br>
 <hr/>
 
